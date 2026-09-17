@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: kyvex-dashboard
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 3000
+      - key: BOT_TOKEN
+        sync: false
+      - key: CLIENT_ID
+        sync: false
+      - key: CLIENT_SECRET
+        sync: false
+      - key: DASHBOARD_URL
+        value: https://kyvex.com
+      - key: GUILD_ID
+        sync: false
+      - key: DEFAULT_VOLUME
+        value: 70
+      - key: BOT_EMBED_COLOR
+        value: "#5865f2"
+      - key: BOT_FOOTER_TEXT
+        value: "Kyvex • Modern Discord Bot"

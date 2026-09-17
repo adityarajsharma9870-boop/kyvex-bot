@@ -1,0 +1,119 @@
+{
+  "counter": 5,
+  "panels": [
+    {
+      "id": "panel_1788784183605",
+      "messageId": "1546497695873507453",
+      "channelId": "1545799253572452484",
+      "channelName": "general",
+      "guildId": "1545799252221894818",
+      "title": "dwadawdwd",
+      "description": "dwdwdwadwdwdw",
+      "bannerUrl": null,
+      "footerText": "awd",
+      "color": "#f1c40f",
+      "categoryId": null,
+      "supportRoleId": "1545843223170130021",
+      "createdAt": "2026-09-07T12:29:43.606Z",
+      "buttonLabel": "Create Ticket",
+      "buttonEmoji": "🎟️",
+      "buttonStyle": "danger",
+      "interactionMode": "rows",
+      "interactionRows": [
+        {
+          "id": "dropdown_1788784173440",
+          "type": "dropdown",
+          "placeholder": "dwadaw",
+          "options": [
+            {
+              "label": "General Support",
+              "emoji": "💬",
+              "description": "Help with questions or issues"
+            },
+            {
+              "label": "Billing / Order",
+              "emoji": "💳",
+              "description": "Payment & license queries"
+            },
+            {
+              "label": "Option 3",
+              "emoji": "🛡️",
+              "description": "Apply to join our staff team"
+            },
+            {
+              "label": "Option 4",
+              "emoji": "🐛",
+              "description": "Report an issue or glitch"
+            },
+            {
+              "label": "Option 5",
+              "emoji": "🤝",
+              "description": "Partner with our server"
+            }
+          ]
+        }
+      ],
+      "dropdowns": [
+        {
+          "id": "menu_1",
+          "placeholder": "SELECT CATEGORY",
+          "options": [
+            {
+              "label": "General Support",
+              "emoji": "💬",
+              "description": "Help with questions or issues"
+            },
+            {
+              "label": "Billing / Order",
+              "emoji": "💳",
+              "description": "Payment verification & queries"
+            }
+          ]
+        }
+      ],
+      "dropdown1": "SELECT CATEGORY",
+      "dropdown2": "BRUTAL PANEL",
+      "dropdown3": "CLIENT SUPPORT",
+      "dropdown4": "CREATE TICKET TO BECOME A STAFF",
+      "dropdown5": "FREE PANEL",
+      "updatedAt": "2026-09-15T07:39:36.508Z",
+      "supportRoles": [
+        "1545813879911747679",
+        "1545813964481626202",
+        "1545843223170130021"
+      ],
+      "ticketPrefix": "aditya",
+      "adminAccess": false
+    }
+  ],
+  "activeTickets": {
+    "1547317278348017704": {
+      "ticketId": "0003",
+      "channelId": "1547317278348017704",
+      "guildId": "1545799252221894818",
+      "userId": "1476147071147835433",
+      "userName": "aditya.v1",
+      "category": "INTERNAL MAX",
+      "prefix": "internal",
+      "createdAt": "2026-09-09T18:46:27.468Z",
+      "closed": true,
+      "claimedBy": null,
+      "closedAt": "2026-09-15T07:36:45.508Z",
+      "closedBy": "Web Dashboard Admin"
+    },
+    "1549323866353045504": {
+      "ticketId": "0004",
+      "channelId": "1549323866353045504",
+      "guildId": "1545799252221894818",
+      "userId": "1534305684240339174",
+      "userName": "adityasharma_1845",
+      "category": "Option 4",
+      "prefix": "option4",
+      "createdAt": "2026-09-15T07:39:55.198Z",
+      "closed": true,
+      "claimedBy": null,
+      "closedAt": "2026-09-15T18:52:56.480Z",
+      "closedBy": "Web Dashboard Admin"
+    }
+  }
+}

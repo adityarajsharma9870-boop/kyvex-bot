@@ -1,0 +1,16 @@
+{
+  "1545799252221894818": {
+    "enabled": true,
+    "roleId": "1545813879911747679",
+    "channelId": "1545799253572452484",
+    "messageId": "1549319280716283908",
+    "title": "SECURITY",
+    "description": "This server requires you to verify yourself to get access to other channels, you can simply verify by clicking on the verify button.",
+    "buttonText": "Verify",
+    "buttonColor": "Primary",
+    "buttonEmoji": "🛡️",
+    "bannerUrl": null,
+    "embedColor": "#2b7fff",
+    "verifiedCount": 1
+  }
+}

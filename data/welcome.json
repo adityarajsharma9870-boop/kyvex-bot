@@ -1,0 +1,42 @@
+{
+  "1545799252221894818": {
+    "enabled": true,
+    "channelId": null,
+    "mentionUser": true,
+    "content": "{user}",
+    "authorEnabled": true,
+    "authorName": "{username}",
+    "authorIcon": "user_avatar",
+    "authorCustomUrl": "",
+    "title": "",
+    "description": "Welcome {user} to the **{server}**! 🌟\n\n• *Need assistance? Feel free to ask your questions in #🔧・support.*\n• *Have you checked out our premium features?*\n  - *Explore them today and support our development in #💎・premium!*\n\n*Enjoy your time here, and don't hesitate to reach out if you need help!*",
+    "color": "#5865f2",
+    "thumbnail": "custom",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&auto=format&fit=crop&q=80",
+    "imageUrl": "",
+    "footerText": "{server} • Welcome!",
+    "footerIcon": "server_icon",
+    "footerCustomUrl": "",
+    "timestamp": true
+  },
+  "1547315288293515424": {
+    "enabled": true,
+    "channelId": null,
+    "mentionUser": true,
+    "content": "{user}",
+    "authorEnabled": true,
+    "authorName": "{username}",
+    "authorIcon": "user_avatar",
+    "authorCustomUrl": "",
+    "title": "",
+    "description": "Welcome {user} to the **{server}**! 🌟\n\n• *Need assistance? Feel free to ask your questions in #🔧・support.*\n• *Have you checked out our premium features?*\n  - *Explore them today and support our development in #💎・premium!*\n\n*Enjoy your time here, and don't hesitate to reach out if you need help!*",
+    "color": "#5865f2",
+    "thumbnail": "custom",
+    "thumbnailUrl": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&auto=format&fit=crop&q=80",
+    "imageUrl": "",
+    "footerText": "{server} • Welcome!",
+    "footerIcon": "server_icon",
+    "footerCustomUrl": "",
+    "timestamp": true
+  }
+}
