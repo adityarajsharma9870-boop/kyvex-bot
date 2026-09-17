@@ -35,5 +35,8 @@
     "qrcode": "^1.5.4",
     "youtube-sr": "^4.3.12",
     "yt-search": "^2.13.1"
+  },
+  "devDependencies": {
+    "vercel": "^59.20.0"
   }
 }

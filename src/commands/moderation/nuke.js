@@ -31,11 +31,11 @@ module.exports = {
       await interaction.reply({ content: '💣 Nuking and recreating channel...', ephemeral: true });
 
       const newChannel = await channel.clone({
-        reason: `[OG EMPIRE NUKE] Recreated by ${interaction.user.tag}`
+        reason: `[Kyvex NUKE] Recreated by ${interaction.user.tag}`
       });
 
       await newChannel.setPosition(position);
-      await channel.delete(`[OG EMPIRE NUKE] Deleted by ${interaction.user.tag}`);
+      await channel.delete(`[Kyvex NUKE] Deleted by ${interaction.user.tag}`);
 
       await newChannel.send({
         embeds: [

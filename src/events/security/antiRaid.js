@@ -40,7 +40,7 @@ module.exports = {
       try {
         if (member.manageable) {
           const timeoutMs = (antiRaid.quarantineDurationMin || 15) * 60 * 1000;
-          await member.timeout(timeoutMs, '[OG EMPIRE ANTI-RAID] Auto-restricted during active server raid');
+          await member.timeout(timeoutMs, '[Kyvex ANTI-RAID] Auto-restricted during active server raid');
           logger.warn(`[ANTI-RAID] Auto-timed out new joiner ${user.tag} during active raid in ${guild.name}`);
         }
       } catch (e) {}
@@ -70,7 +70,7 @@ module.exports = {
         try {
           const m = await guild.members.fetch(j.memberId).catch(() => null);
           if (m && m.manageable) {
-            await m.timeout(timeoutMs, '[OG EMPIRE ANTI-RAID] Restricted member during detected mass join raid');
+            await m.timeout(timeoutMs, '[Kyvex ANTI-RAID] Restricted member during detected mass join raid');
             restrictedCount++;
           }
         } catch (e) {}
@@ -81,7 +81,7 @@ module.exports = {
         .setColor('#FF0033')
         .setTitle('🚨 MASS JOIN RAID DETECTED • AUTOMATIC LOCKDOWN ENGAGED')
         .setDescription(
-          `**OG EMPIRE Anti-Raid Sentinel** has detected an abnormal mass member join surge in the server!\n\n` +
+          `**Kyvex Anti-Raid Sentinel** has detected an abnormal mass member join surge in the server!\n\n` +
           `• **Join Surge Rate:** \`${joins.length} members\` within \`${antiRaid.joinWindowSec} seconds\`\n` +
           `• **Configured Threshold:** \`${threshold} joins\` / \`${antiRaid.joinWindowSec}s\`\n` +
           `• **Lockdown Status:** 🔒 **All Public Text Channels Locked** (${lockdownResult?.affectedChannels || 'Multiple'} channels)\n` +
@@ -95,7 +95,7 @@ module.exports = {
               (joins.length > 10 ? `\n*...and ${joins.length - 10} more*` : '')
           }
         ])
-        .setFooter({ text: 'OG EMPIRE Autonomous Anti-Raid Matrix • Active Shield' })
+        .setFooter({ text: 'Kyvex Autonomous Anti-Raid Matrix • Active Shield' })
         .setTimestamp();
 
       // Dispatch to security log channel & mod logs

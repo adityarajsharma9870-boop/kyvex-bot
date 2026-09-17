@@ -223,7 +223,7 @@ module.exports = {
           `• **Skipped (Already Set):** \`${alreadyCorrect}\`\n` +
           `• **Failed:** \`${failedCount}\``
         )
-        .setFooter({ text: 'Rate-limit protected execution • OG EMPIRE' });
+        .setFooter({ text: 'Rate-limit protected execution • Kyvex' });
     };
 
     // Initial progress display
@@ -271,7 +271,7 @@ module.exports = {
         `• **Failed:** \`${failedCount} members\`\n` +
         `• **Time Elapsed:** \`${durationSeconds}s\``
       )
-      .setFooter({ text: `Executed by ${interaction.user.tag} • OG EMPIRE` })
+      .setFooter({ text: `Executed by ${interaction.user.tag} • Kyvex` })
       .setTimestamp();
 
     await interaction.editReply({ embeds: [finalEmbed] });

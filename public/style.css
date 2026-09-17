@@ -1,5 +1,5 @@
 /* ==========================================================================
-   OG EMPIRE • COMPLETE SAAS DASHBOARD DESIGN SYSTEM
+   KYVEX • COMPLETE SAAS DASHBOARD DESIGN SYSTEM
    ========================================================================== */
 
 :root {
@@ -1954,7 +1954,7 @@ input:checked + .slider:before {
 .text-danger { color: var(--neon-magenta) !important; text-shadow: 0 0 10px rgba(244, 63, 94, 0.5); }
 
 /* ==========================================================================
-   8. OG EMPIRE SPECIFIC: MODALS, LIVE CANVAS & STICKY SEND BAR
+   8. KYVEX SPECIFIC: MODALS, LIVE CANVAS & STICKY SEND BAR
    ========================================================================== */
 
 /* Modal: Select Send Channel (Neon Cyberpunk) */
@@ -2211,7 +2211,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   OG EMPIRE: PANELS OVERVIEW & CONTROLS (NEON CYBERPUNK)
+   KYVEX: PANELS OVERVIEW & CONTROLS (NEON CYBERPUNK)
    ========================================================================== */
 .panels-quota-counter {
   font-size: 0.95rem;
@@ -2566,7 +2566,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   OG EMPIRE: PANEL DESIGNER LAYOUT & LIVE CANVAS (SCREENSHOTS 3 & 4)
+   KYVEX: PANEL DESIGNER LAYOUT & LIVE CANVAS (SCREENSHOTS 3 & 4)
    ========================================================================== */
 .designer-top-bar {
   display: flex;
@@ -2692,7 +2692,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   OG EMPIRE: RIGHT COLUMN PROPERTIES EDITOR
+   KYVEX: RIGHT COLUMN PROPERTIES EDITOR
    ========================================================================== */
 .designer-editor-col {
   background: #13151f;
@@ -3657,7 +3657,7 @@ input:checked + .slider:before {
 }
 
 /* ==========================================================================
-   OG EMPIRE • PUBLIC LANDING PAGE (EXCLUSIVE CYBER DEFENSE AESTHETIC)
+   KYVEX • PUBLIC LANDING PAGE (EXCLUSIVE CYBER DEFENSE AESTHETIC)
    ========================================================================== */
 
 .landing-page-wrapper {
@@ -7880,8 +7880,517 @@ h1, h2, h3, h4,
   color: #dbdee1;
 }
 
+/* ============================================================ */
+/* 9. ZYNRAX SLEEK RED & CRIMSON CYBERPUNK ARCHITECTURE         */
+/* ============================================================ */
 
+/* Top Zynrax Floating Navbar */
+.zynrax-topbar {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 1400px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1.6rem;
+  background: rgba(18, 14, 20, 0.88);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 42, 75, 0.22);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(255, 42, 75, 0.1);
+  transition: all 0.3s ease;
+}
 
+.zynrax-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+}
 
+.zynrax-avatar-ring {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #ff2a4b, #991b1b);
+  box-shadow: 0 0 16px rgba(255, 42, 75, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.zynrax-avatar-ring img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 
+.zynrax-brand-name {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.22rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #fff;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(255, 42, 75, 0.35);
+}
+
+.zynrax-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 1.8rem;
+}
+
+.zynrax-nav-item {
+  font-family: 'Orbitron', 'Rajdhani', sans-serif;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #c4c1ca;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem 0.2rem;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.zynrax-nav-item:hover,
+.zynrax-nav-item.active {
+  color: #fff;
+}
+
+.zynrax-nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #ff2a4b;
+  box-shadow: 0 0 8px #ff2a4b;
+}
+
+.zynrax-btn-premium {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 1.1rem;
+  background: #fff;
+  color: #0b090e;
+  border-radius: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-decoration: none;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(255, 255, 255, 0.25);
+}
+
+.zynrax-btn-premium:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4);
+}
+
+.zynrax-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.zynrax-lang-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: #e2e0e6;
+  cursor: pointer;
+}
+
+.zynrax-btn-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.5rem 1.4rem;
+  background: linear-gradient(135deg, #ff2a4b 0%, #d91436 100%);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 42, 75, 0.45);
+  transition: all 0.25s ease;
+}
+
+.zynrax-btn-login:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(255, 42, 75, 0.7);
+}
+
+/* Modal Overlay & Zynrax Login Card (Screenshot 2) */
+.zynrax-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(8, 6, 10, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: modalFadeIn 0.3s ease;
+}
+
+.zynrax-login-card {
+  width: 100%;
+  max-width: 440px;
+  background: #110e14;
+  border: 1px solid rgba(255, 42, 75, 0.28);
+  border-radius: 28px;
+  padding: 2.8rem 2.2rem 2.2rem;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(255, 42, 75, 0.12);
+}
+
+.zynrax-glow-avatar-wrapper {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1.6rem;
+}
+
+.zynrax-glow-avatar-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 42, 75, 0.4) 0%, transparent 70%);
+  z-index: 0;
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+.zynrax-avatar-outer-ring {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #ff2a4b, #881337);
+  box-shadow: 0 0 25px rgba(255, 42, 75, 0.6);
+  z-index: 1;
+}
+
+.zynrax-avatar-outer-ring img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1a1622;
+}
+
+.zynrax-login-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: #ff2a4b;
+  letter-spacing: 1px;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 16px rgba(255, 42, 75, 0.4);
+}
+
+.zynrax-login-desc {
+  font-size: 0.95rem;
+  color: #a19da8;
+  line-height: 1.5;
+  margin-bottom: 2rem;
+}
+
+.btn-discord-login-full {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.4rem;
+  background: linear-gradient(135deg, #ff2a4b 0%, #c81232 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(255, 42, 75, 0.4);
+  transition: all 0.25s ease;
+}
+
+.btn-discord-login-full:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(255, 42, 75, 0.65);
+}
+
+.zynrax-login-terms {
+  margin-top: 1.6rem;
+  font-size: 0.78rem;
+  color: #6b6772;
+}
+
+.zynrax-login-terms a {
+  color: #a19da8;
+  text-decoration: underline;
+}
+
+.btn-close-modal-round {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: none;
+  color: #8f8b96;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-close-modal-round:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* ============================================================ */
+/* YOUR SERVERS GRID VIEW (SCREENSHOT 4)                         */
+/* ============================================================ */
+.zynrax-stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #95919e;
+  letter-spacing: 1px;
+  padding: 0.6rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.zstat-pill strong {
+  color: #fff;
+  margin-left: 0.35rem;
+  font-weight: 800;
+}
+
+.zstat-sep {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.zynrax-gradient-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 1.85rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #fff;
+}
+
+.zynrax-server-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.4rem;
+  margin-top: 1.6rem;
+}
+
+.zynrax-server-card {
+  background: #131017;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 1.8rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.zynrax-server-card.has-bot {
+  border-color: rgba(255, 42, 75, 0.25);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 42, 75, 0.06);
+}
+
+.zynrax-server-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 42, 75, 0.45);
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 42, 75, 0.15);
+}
+
+.zynrax-card-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1e1a26;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: #fff;
+}
+
+.zynrax-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zynrax-card-name {
+  font-family: 'Orbitron', 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.35rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.zynrax-badge-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: 'Orbitron', monospace;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin-bottom: 1.3rem;
+}
+
+.zynrax-badge-role.owner {
+  color: #facc15;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
+.zynrax-badge-role.admin {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+}
+
+.zynrax-badge-role.extra {
+  color: #ff3b5c;
+  background: rgba(255, 59, 92, 0.12);
+  border: 1px solid rgba(255, 59, 92, 0.3);
+}
+
+.btn-card-configure {
+  width: 100%;
+  padding: 0.7rem 1.2rem;
+  background: linear-gradient(135deg, #ff2a4b 0%, #c81232 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 42, 75, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-card-configure:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 42, 75, 0.6);
+}
+
+.btn-card-addbot {
+  width: 100%;
+  padding: 0.7rem 1.2rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: #a3a0aa;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-card-addbot:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.btn-back-to-servers {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 42, 75, 0.12);
+  border: 1px solid rgba(255, 42, 75, 0.3);
+  color: #ff2a4b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-back-to-servers:hover {
+  background: #ff2a4b;
+  color: #fff;
+  box-shadow: 0 0 14px rgba(255, 42, 75, 0.55);
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}

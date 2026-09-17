@@ -191,7 +191,7 @@ const logManager = {
             { name: '🔒 Security', value: 'This channel is **Private** (`@everyone` cannot view).', inline: true },
             { name: '📁 Category', value: `\`${category.name}\``, inline: true }
           ])
-          .setFooter({ text: 'OG EMPIRE Security & Logging System' })
+          .setFooter({ text: 'Kyvex Security & Logging System' })
           .setTimestamp();
 
         await channel.send({ embeds: [welcomeEmbed] }).catch(() => null);
@@ -286,7 +286,7 @@ const logManager = {
         { name: '🛡️ Moderator', value: `${moderator?.tag || moderator} (\`${moderator?.id || 'Unknown'}\`)`, inline: true },
         { name: '📝 Reason', value: reason || 'No reason provided', inline: false }
       ])
-      .setFooter({ text: 'OG EMPIRE Moderation Logs' })
+      .setFooter({ text: 'Kyvex Moderation Logs' })
       .setTimestamp();
 
     if (duration) {

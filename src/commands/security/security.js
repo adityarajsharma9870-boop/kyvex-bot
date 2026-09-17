@@ -179,7 +179,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor('#ff2449')
-        .setTitle(`🛡️ OG EMPIRE • Autonomous Security Status [${guild.name}]`)
+        .setTitle(`🛡️ Kyvex • Autonomous Security Status [${guild.name}]`)
         .setDescription('Complete overview of active defense layers, threshold sentinels, and tier configurations.')
         .addFields([
           {
@@ -221,7 +221,7 @@ module.exports = {
             inline: false
           }
         ])
-        .setFooter({ text: 'OG EMPIRE Defense Matrix v5.2' })
+        .setFooter({ text: 'Kyvex Defense Matrix v5.2' })
         .setTimestamp();
 
       return interaction.reply({ embeds: [embed] });

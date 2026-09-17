@@ -60,13 +60,13 @@ module.exports = {
     if (targetMember && targetMember.manageable) {
       try {
         if (punishment.type === 'timeout' && punishment.durationMs > 0) {
-          await targetMember.timeout(punishment.durationMs, `[OG EMPIRE] Exceeded strike threshold (${totalWarnings} warnings)`);
+          await targetMember.timeout(punishment.durationMs, `[Kyvex] Exceeded strike threshold (${totalWarnings} warnings)`);
           punishmentDetails += ` • Escalated to ${punishment.label}`;
         } else if (punishment.type === 'kick') {
-          await targetMember.kick(`[OG EMPIRE] Exceeded strike threshold (${totalWarnings} warnings)`);
+          await targetMember.kick(`[Kyvex] Exceeded strike threshold (${totalWarnings} warnings)`);
           punishmentDetails += ` • Escalated to ${punishment.label}`;
         } else if (punishment.type === 'ban') {
-          await targetMember.ban({ reason: `[OG EMPIRE] Exceeded strike threshold (${totalWarnings} warnings)` });
+          await targetMember.ban({ reason: `[Kyvex] Exceeded strike threshold (${totalWarnings} warnings)` });
           punishmentDetails += ` • Escalated to ${punishment.label}`;
         }
       } catch (e) {

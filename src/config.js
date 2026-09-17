@@ -7,8 +7,8 @@ module.exports = {
   dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
   guildId: process.env.GUILD_ID || '',
   defaultVolume: parseInt(process.env.DEFAULT_VOLUME, 10) || 70,
-  embedColor: process.env.BOT_EMBED_COLOR || '#F1C40F', // Astrial signature golden yellow
-  footerText: process.env.BOT_FOOTER_TEXT || 'OG EMPIRE • High Quality Music',
+  embedColor: process.env.BOT_EMBED_COLOR || '#5865F2', // Kyvex signature color
+  footerText: process.env.BOT_FOOTER_TEXT || 'Kyvex • Modern Discord Automation & Cyber-Defense',
   icons: {
     play: '▶️',
     pause: '⏸️',

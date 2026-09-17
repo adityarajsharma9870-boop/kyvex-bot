@@ -5,7 +5,7 @@ const { createSuccessEmbed, createErrorEmbed } = require('../../utils/embedBuild
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setlogchannel')
-    .setDescription('Set the channel where OG EMPIRE posts security alerts and audit logs')
+    .setDescription('Set the channel where Kyvex posts security alerts and audit logs')
     .addChannelOption((option) =>
       option
         .setName('channel')

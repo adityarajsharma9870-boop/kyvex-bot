@@ -58,7 +58,7 @@ module.exports = {
             .setColor('#10b981')
             .setTitle(`📜 Warnings • ${targetUser.tag}`)
             .setDescription(`✅ **${targetUser.tag}** has a completely clean record with **0 warnings**.`)
-            .setFooter({ text: 'OG EMPIRE Security Matrix' })
+            .setFooter({ text: 'Kyvex Security Matrix' })
             .setTimestamp()
         ],
         ephemeral: true

@@ -40,7 +40,7 @@ module.exports = {
         : '*No Extra Owners appointed yet.*';
 
       const embed = createAstrialEmbed()
-        .setTitle('👑 OG EMPIRE • Extra Owner Management')
+        .setTitle('👑 Kyvex • Extra Owner Management')
         .setDescription(
           `**Server Owner:** <@${interaction.guild.ownerId}>\n\n` +
           `__**Appointed Extra Owners:**__\n${list}\n\n` +

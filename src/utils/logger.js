@@ -22,9 +22,9 @@ const logger = {
     console.log(`${formatTime()} ${chalk.hex('#F1C40F')('[MUSIC]')} ${msg}`);
   },
   ready: (botTag) => {
-    console.log(`\n${chalk.hex('#F1C40F').bold('==============================================')}`);
-    console.log(`${chalk.hex('#F1C40F').bold('          OG EMPIRE MUSIC BOT ONLINE          ')}`);
-    console.log(`${chalk.hex('#F1C40F').bold('==============================================')}`);
+    console.log(`\n${chalk.hex('#5865F2').bold('==============================================')}`);
+    console.log(`${chalk.hex('#5865F2').bold('          KYVEX DISCORD BOT ONLINE            ')}`);
+    console.log(`${chalk.hex('#5865F2').bold('==============================================')}`);
     console.log(`${formatTime()} ${chalk.green('✔')} Logged in as: ${chalk.bold.white(botTag)}`);
     console.log(`${formatTime()} ${chalk.green('✔')} Voice DAVE E2EE protocol loaded!`);
     console.log(`${formatTime()} ${chalk.green('✔')} Audio Engine: DisTube v5 + FFmpeg Static`);

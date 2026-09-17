@@ -525,7 +525,7 @@ const securityManager = {
           PermissionFlagsBits.Speak
         ]);
 
-      await role.setPermissions(newPermissions, `[OG EMPIRE SECURITY] ${reason}`);
+      await role.setPermissions(newPermissions, `[Kyvex SECURITY] ${reason}`);
       logger.info(`[SECURITY] Successfully sanitized role [${role.name}] in [${role.guild.name}]`);
       return true;
     } catch (err) {
@@ -602,7 +602,7 @@ const securityManager = {
                 r.permissions.has(PermissionFlagsBits.ManageGuild))
           );
           if (adminRoles.size > 0) {
-            await member.roles.remove(adminRoles, '[OG EMPIRE] Stripped unwhitelisted admin/manage-server role');
+            await member.roles.remove(adminRoles, '[Kyvex] Stripped unwhitelisted admin/manage-server role');
             logger.warn(`[SECURITY SCAN] Stripped roles [${adminRoles.map((r) => r.name).join(', ')}] from ${member.user.tag}`);
           }
         }
@@ -623,7 +623,7 @@ const securityManager = {
         const config = this.getConfig(guild.id);
         const action = actionOverride || config.punishment || 'ban';
         if (action === 'ban') {
-          await guild.members.ban(executorId, { reason: `[OG EMPIRE ANTI-NUKE] ${reason}` }).catch(() => {});
+          await guild.members.ban(executorId, { reason: `[Kyvex ANTI-NUKE] ${reason}` }).catch(() => {});
           return 'banned';
         }
         return false;
@@ -648,7 +648,7 @@ const securityManager = {
         );
 
         if (dangerousRoles.size > 0) {
-          await member.roles.remove(dangerousRoles, `[OG EMPIRE ANTI-ADMIN] ${reason}`).catch(() => {});
+          await member.roles.remove(dangerousRoles, `[Kyvex ANTI-ADMIN] ${reason}`).catch(() => {});
           logger.warn(`[ANTI-ADMIN] Stripped ${dangerousRoles.size} admin/manage roles from ${member.user.tag}`);
         }
       }
@@ -656,13 +656,13 @@ const securityManager = {
       // 2. Execute selected punishment with direct try/catch fallbacks
       if (action === 'ban') {
         try {
-          await guild.members.ban(executorId, { reason: `[OG EMPIRE ANTI-NUKE] ${reason}`, deleteMessageSeconds: 604800 });
+          await guild.members.ban(executorId, { reason: `[Kyvex ANTI-NUKE] ${reason}`, deleteMessageSeconds: 604800 });
           logger.warn(`[ANTI-NUKE] BANNED offender: ${member.user.tag} (${executorId}) for: ${reason}`);
           return 'banned';
         } catch (err) {
           logger.warn(`[ANTI-NUKE] Direct ban failed (${err.message}). Trying member.ban...`);
           try {
-            await member.ban({ reason: `[OG EMPIRE ANTI-NUKE] ${reason}` });
+            await member.ban({ reason: `[Kyvex ANTI-NUKE] ${reason}` });
             return 'banned';
           } catch (e2) {
             logger.warn(`[ANTI-NUKE] Member ban failed (${e2.message}). Falling back to quarantine...`);
@@ -670,7 +670,7 @@ const securityManager = {
         }
       } else if (action === 'kick') {
         try {
-          await member.kick(`[OG EMPIRE ANTI-NUKE] ${reason}`);
+          await member.kick(`[Kyvex ANTI-NUKE] ${reason}`);
           logger.warn(`[ANTI-NUKE] KICKED offender: ${member.user.tag} (${executorId}) for: ${reason}`);
           return 'kicked';
         } catch (err) {
@@ -679,7 +679,7 @@ const securityManager = {
       } else if (action === 'timeout') {
         try {
           const timeoutMs = config.timeoutDurationMs || ((config.timeoutDurationMinutes || 10) * 60 * 1000);
-          await member.timeout(timeoutMs, `[OG EMPIRE ANTI-NUKE] ${reason}`);
+          await member.timeout(timeoutMs, `[Kyvex ANTI-NUKE] ${reason}`);
           const durationMins = Math.round(timeoutMs / 60000);
           logger.warn(`[ANTI-NUKE] TIMED OUT offender: ${member.user.tag} (${executorId}) for ${durationMins}m for: ${reason}`);
           return 'timed_out';
@@ -692,7 +692,7 @@ const securityManager = {
       if (botMember) {
         const manageableRoles = member.roles.cache.filter((r) => r.position < botMember.roles.highest.position && r.id !== guild.id);
         if (manageableRoles.size > 0) {
-          await member.roles.remove(manageableRoles, `[OG EMPIRE ANTI-NUKE QUARANTINE] ${reason}`).catch(() => {});
+          await member.roles.remove(manageableRoles, `[Kyvex ANTI-NUKE QUARANTINE] ${reason}`).catch(() => {});
         }
       }
       logger.warn(`[ANTI-NUKE] QUARANTINED offender: ${member.user.tag} (${executorId}) for: ${reason}`);
@@ -719,7 +719,7 @@ const securityManager = {
       }
 
       if (Object.keys(revertData).length > 0) {
-        await guild.edit(revertData, '[OG EMPIRE ANTI-NUKE] Reverted unauthorized server settings change');
+        await guild.edit(revertData, '[Kyvex ANTI-NUKE] Reverted unauthorized server settings change');
         logger.info(`[SECURITY] Successfully restored server settings in [${guild.name}]`);
         return true;
       }
@@ -738,9 +738,9 @@ const securityManager = {
       if (existing) return existing;
     }
 
-    // 2. Check if a channel named '🛡️・og-empire-logs' or 'og-empire-logs' already exists
+    // 2. Check if a channel named '🛡️・kyvex-logs' or 'kyvex-logs' already exists
     const found = guild.channels.cache.find(
-      (c) => c.name === '🛡️・og-empire-logs' || c.name === 'og-empire-logs'
+      (c) => c.name === '🛡️・kyvex-logs' || c.name === 'kyvex-logs'
     );
     if (found) {
       this.setLogChannel(guild.id, found.id);
@@ -751,9 +751,9 @@ const securityManager = {
     try {
       const { PermissionFlagsBits, ChannelType, OverwriteType } = require('discord.js');
       const newChannel = await guild.channels.create({
-        name: '🛡️・og-empire-logs',
+        name: '🛡️・kyvex-logs',
         type: ChannelType.GuildText,
-        topic: 'Private Security Logs & Anti-Nuke Alerts for OG EMPIRE (Owner & Bot Only)',
+        topic: 'Private Security Logs & Anti-Nuke Alerts for Kyvex (Owner & Bot Only)',
         permissionOverwrites: [
           {
             id: guild.roles.everyone.id,
@@ -780,21 +780,21 @@ const securityManager = {
             ]
           }] : [])
         ],
-        reason: '[OG EMPIRE] Auto-created private security log channel'
+        reason: '[Kyvex] Auto-created private security log channel'
       });
 
       this.setLogChannel(guild.id, newChannel.id);
 
       const initEmbed = new EmbedBuilder()
         .setColor('#F1C40F')
-        .setTitle('🛡️ OG EMPIRE • Security Log Channel Initialized')
+        .setTitle('🛡️ Kyvex • Security Log Channel Initialized')
         .setDescription(
           '**Ye channel automatically create kiya gaya hai aur completely private hai!**\n\n' +
-          '• **Visibility:** Sirf **Server Owner** (<@' + guild.ownerId + '>) aur **OG EMPIRE** bot hi ise dekh sakte hain.\n' +
+          '• **Visibility:** Sirf **Server Owner** (<@' + guild.ownerId + '>) aur **Kyvex** bot hi ise dekh sakte hain.\n' +
           '• **Anti-Nuke Alerts:** Jab bhi koi unwhitelisted admin channel/role delete, mass-ban, kick ya unauthorized bot invite karega, uska alert yahan aayega!\n' +
           '• **Whitelist:** Kisi trusted admin ko allow karne ke liye `/whitelist add @user` use karein.'
         )
-        .setFooter({ text: 'OG EMPIRE Security System • Auto-Setup Complete' })
+        .setFooter({ text: 'Kyvex Security System • Auto-Setup Complete' })
         .setTimestamp();
 
       await newChannel.send({ embeds: [initEmbed] }).catch(() => {});
@@ -825,7 +825,7 @@ const securityManager = {
 
     const embed = new EmbedBuilder()
       .setColor('#FF0000')
-      .setTitle('🚨 OG EMPIRE • SECURITY BREACH DETECTED!')
+      .setTitle('🚨 Kyvex • SECURITY BREACH DETECTED!')
       .setDescription(
         `**Action:** \`${action}\`\n` +
         `**Rogue User:** ${executor ? `<@${executor.id}> (${executor.tag || executor.username})` : 'Unknown'}\n` +
@@ -833,7 +833,7 @@ const securityManager = {
         `**Status / Countermeasure:** **${details || 'Neutralized & Punished'}**\n` +
         `**Reason:** ${reason || 'Unauthorized Administrator Action'}`
       )
-      .setFooter({ text: 'OG EMPIRE Security System • Instant Protection' })
+      .setFooter({ text: 'Kyvex Security System • Instant Protection' })
       .setTimestamp();
 
     // 1. Send to auto-created or configured log channel
@@ -870,7 +870,7 @@ const securityManager = {
       try {
         await channel.permissionOverwrites.edit(guild.roles.everyone, {
           SendMessages: enable ? false : null
-        }, { reason: `[OG EMPIRE] Emergency Lockdown ${enable ? 'ENABLED' : 'DISABLED'}` });
+        }, { reason: `[Kyvex] Emergency Lockdown ${enable ? 'ENABLED' : 'DISABLED'}` });
         affected++;
       } catch (err) {
         // channel permission modification error handled silently

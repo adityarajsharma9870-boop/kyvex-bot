@@ -5,7 +5,7 @@ const { createAstrialEmbed, createSuccessEmbed, createErrorEmbed } = require('..
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('antinuke')
-    .setDescription('Configure OG EMPIRE Anti-Nuke System')
+    .setDescription('Configure Kyvex Anti-Nuke System')
     .addSubcommand((sub) =>
       sub.setName('enable').setDescription('Enable 24/7 Anti-Nuke defense matrix')
     )
@@ -36,7 +36,7 @@ module.exports = {
         embeds: [
           createSuccessEmbed(
             'Anti-Nuke Activated',
-            '🛡️ **OG EMPIRE Anti-Nuke Defense is now ACTIVE!**\n\n' +
+            '🛡️ **Kyvex Anti-Nuke Defense is now ACTIVE!**\n\n' +
             '• Any unwhitelisted administrator attempting to delete channels, delete roles, mass ban, kick, or invite bots will be **instantly banned/quarantined**.\n' +
             '• Actions will be reverted automatically.\n' +
             '• Managed by Server Owner & Extra Owners.'
@@ -51,7 +51,7 @@ module.exports = {
         embeds: [
           createSuccessEmbed(
             'Anti-Nuke Deactivated',
-            '⚠️ **OG EMPIRE Anti-Nuke has been DISABLED.** Server actions will no longer be intercepted.'
+            '⚠️ **Kyvex Anti-Nuke has been DISABLED.** Server actions will no longer be intercepted.'
           )
         ]
       });
@@ -68,7 +68,7 @@ module.exports = {
       const logChannel = config.logChannel ? `<#${config.logChannel}>` : '*Not Set (Use `/setlogchannel`)*';
 
       const embed = createAstrialEmbed()
-        .setTitle('🛡️ OG EMPIRE • Anti-Nuke Security Status')
+        .setTitle('🛡️ Kyvex • Anti-Nuke Security Status')
         .setDescription(
           `**System Status:** ${isEnabled ? '🟢 **ACTIVE & ARMED**' : '🔴 **DISABLED**'}\n` +
           `**Server Owner:** <@${interaction.guild.ownerId}>\n` +

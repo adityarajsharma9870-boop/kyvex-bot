@@ -53,7 +53,7 @@ module.exports = {
         : '*No additional administrators whitelisted yet.*';
 
       const embed = createAstrialEmbed()
-        .setTitle('🛡️ OG EMPIRE • Administrator Whitelist')
+        .setTitle('🛡️ Kyvex • Administrator Whitelist')
         .setDescription(
           `**Server Owner (Permanent Bypass):** <@${interaction.guild.ownerId}>\n\n` +
           `__**Authorized Administrators:**__\n${list}\n\n` +
@@ -98,7 +98,7 @@ module.exports = {
             createErrorEmbed(
               'Hierarchy Error',
               `Role **${targetRole.name}** bot ke highest role se upar ya barabar hai.\n` +
-              `Discord me \`Server Settings -> Roles\` me jakar **OG EMPIRE** bot role ko is role ke upar drag karein!`
+              `Discord me \`Server Settings -> Roles\` me jakar **Kyvex** bot role ko is role ke upar drag karein!`
             )
           ],
           ephemeral: true
@@ -132,7 +132,7 @@ module.exports = {
                 SendMessages: true,
                 ReadMessageHistory: true
               },
-              { reason: '[OG EMPIRE] All-channel messaging enabled for secured role' }
+              { reason: '[Kyvex] All-channel messaging enabled for secured role' }
             );
             channelCount++;
           } catch (e) {}
@@ -185,14 +185,14 @@ module.exports = {
           : '✅ *No unauthorized administrators found. Your server is 100% secure!*';
 
         const scanEmbed = createAstrialEmbed()
-          .setTitle('🔍 OG EMPIRE • Administrator Security Scan')
+          .setTitle('🔍 Kyvex • Administrator Security Scan')
           .setDescription(
             `**Total Members Scanned:** \`${members.size}\`\n\n` +
             `👑 **Server Owner:** <@${interaction.guild.ownerId}>\n\n` +
             `🛡️ **Authorized Whitelisted Admins (${verifiedAdmins.length}):**\n${verifiedText}\n\n` +
             `🚨 **Unwhitelisted Members with Admin Roles (${unauthorizedAdmins.length}):**\n${unauthorizedText}`
           )
-          .setFooter({ text: 'OG EMPIRE Security Engine • Scan & Neutralization Complete' });
+          .setFooter({ text: 'Kyvex Security Engine • Scan & Neutralization Complete' });
 
         return interaction.editReply({ embeds: [scanEmbed] });
       } catch (err) {
@@ -264,7 +264,7 @@ module.exports = {
             (r) => r.permissions.has(PermissionFlagsBits.Administrator) && r.position < botMember.roles.highest.position
           );
           if (dangerousRoles.size > 0) {
-            await member.roles.remove(dangerousRoles, '[OG EMPIRE] Removed from Administrator Whitelist');
+            await member.roles.remove(dangerousRoles, '[Kyvex] Removed from Administrator Whitelist');
             roleRevokedMessage = `\n🔒 *Unka Administrator role turant revoke kar diya gaya hai.*`;
           }
         }

@@ -234,7 +234,7 @@ const verificationManager = {
             .setColor('#00ff88')
             .setTitle('✅ Verification Successful!')
             .setDescription(`Welcome to **${guild.name}**, ${interaction.user}!\n\nYou have been verified and granted the **${role.name}** role. You now have full access to the server!`)
-            .setFooter({ text: 'Security Protected • OG EMPIRE', iconURL: guild.iconURL({ dynamic: true }) || undefined })
+            .setFooter({ text: 'Security Protected • Kyvex', iconURL: guild.iconURL({ dynamic: true }) || undefined })
             .setTimestamp()
         ]
       });

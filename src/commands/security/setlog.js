@@ -42,7 +42,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor('#F1C40F')
         .setAuthor({
-          name: 'OG EMPIRE • Automated Server Logging System',
+          name: 'Kyvex • Automated Server Logging System',
           iconURL: client.user.displayAvatarURL()
         })
         .setTitle('✅ Logging Channels Auto-Configured Successfully!')

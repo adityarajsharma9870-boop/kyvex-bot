@@ -1,6 +1,7 @@
 /**
- * OG EMPIRE • Next-Gen Discord Bot & Security Dashboard Client Logic
- * Features Left Sidebar Navigation, Ticket Panel Designer, 
+ * KYVEX • Next-Gen Discord Bot & Management Dashboard Client Logic
+ * Features Zynrax Modern Dark UI, Server Grid Selector, 
+ * Left Sidebar Navigation, Ticket Panel Designer, 
  * Discord Canvas Live Preview, and Full Anti-Nuke / Audio Management.
  */
 
@@ -9,6 +10,7 @@ let pollTimer = null;
 let currentPanels = [];
 let currentInteractionMode = 'dropdowns';
 let customDropdowns = [];
+let allCachedGuilds = [];
 
 // Panel Settings & Ticket Access Roles State
 let serverRoles = [];
@@ -67,6 +69,7 @@ function switchView(viewId, customBreadcrumb = null) {
       bcActive.textContent = customBreadcrumb;
     } else {
       const titles = {
+        servers: 'Your Servers',
         panels: 'Panels',
         designer: 'Panel Designer',
         home: 'Home',
@@ -87,9 +90,128 @@ function switchView(viewId, customBreadcrumb = null) {
     }
   }
 
+  // If entering servers view, refresh guild grid
+  if (viewId === 'servers' && typeof fetchAllGuilds === 'function') {
+    fetchAllGuilds();
+  }
+
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+/**
+ * Fetches the user's servers list from /api/guilds and updates stats & grid (Screenshot 4)
+ */
+async function fetchAllGuilds() {
+  try {
+    const res = await fetch('/api/guilds');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.success) return;
+
+    // Update stats pills
+    if (data.stats) {
+      const elManageable = document.getElementById('statManageableCount');
+      const elOwned = document.getElementById('statOwnedCount');
+      const elWithBot = document.getElementById('statWithBotCount');
+      if (elManageable) elManageable.textContent = data.stats.manageable;
+      if (elOwned) elOwned.textContent = data.stats.owned;
+      if (elWithBot) elWithBot.textContent = data.stats.withBot;
+    }
+
+    allCachedGuilds = data.servers || [];
+    renderServerGrid(allCachedGuilds);
+  } catch (err) {
+    console.error('Failed to fetch guilds list:', err);
+  }
+}
+
+/**
+ * Renders the Zynrax server cards grid
+ */
+function renderServerGrid(servers) {
+  const container = document.getElementById('zynraxServerGrid');
+  if (!container) return;
+
+  if (!servers || servers.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: #95919e;">
+        <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">🔍</span>
+        <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">No Discord Servers Found</span>
+        <p style="font-size: 0.85rem; margin-top: 0.4rem;">Try searching for a different server name or invite Kyvex.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const botId = '1545804677436940339';
+
+  container.innerHTML = servers.map((s) => {
+    const roleLower = (s.role || 'OWNER').toLowerCase();
+    const roleClass = roleLower.includes('extra') ? 'extra' : (roleLower.includes('admin') ? 'admin' : 'owner');
+    const roleDisplay = s.role || 'OWNER';
+    
+    // Initials for avatar fallback
+    const initials = s.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'KX';
+    const avatarHtml = s.icon 
+      ? `<img src="${s.icon}" alt="${escapeHtml(s.name)}" onerror="this.parentElement.innerHTML='${initials}'">`
+      : `<span>${initials}</span>`;
+
+    // Action button: If hasBot -> "Configure" (red gradient), If not -> "+ Add Bot to Server" (dark)
+    const inviteLink = `https://discord.com/oauth2/authorize?client_id=${botId}&permissions=8&scope=bot%20applications.commands&guild_id=${s.id}`;
+    
+    const actionBtn = s.hasBot
+      ? `<button class="btn-card-configure" onclick="selectAndConfigureGuild('${s.id}', '${encodeURIComponent(s.name)}')">Configure</button>`
+      : `<a href="${inviteLink}" target="_blank" class="btn-card-addbot">+ Add Bot to Server</a>`;
+
+    return `
+      <div class="zynrax-server-card ${s.hasBot ? 'has-bot' : ''}" data-guild-id="${s.id}" data-guild-name="${escapeHtml(s.name.toLowerCase())}">
+        <div class="zynrax-card-avatar">
+          ${avatarHtml}
+        </div>
+        <div class="zynrax-card-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
+        <div class="zynrax-badge-role ${roleClass}">
+          <span>🛡️</span>
+          <span>${roleDisplay}</span>
+        </div>
+        ${actionBtn}
+      </div>
+    `;
+  }).join('');
+}
+
+/**
+ * Configure button click handler on server card:
+ * Switches active context to this guild and opens panels editor
+ */
+window.selectAndConfigureGuild = function(guildId, encodedName) {
+  const guildName = decodeURIComponent(encodedName);
+  currentGuildId = guildId;
+
+  // Update sidebar server info
+  const sidebarName = document.getElementById('sidebarServerName');
+  const bcServer = document.getElementById('bcServer');
+  const serverAvatar = document.getElementById('sidebarServerAvatar');
+  if (sidebarName) sidebarName.textContent = guildName;
+  if (bcServer) bcServer.textContent = guildName;
+  if (serverAvatar) serverAvatar.textContent = guildName.substring(0, 2).toUpperCase();
+
+  // Update server dropdown if present
+  const serverSelect = document.getElementById('serverSelect');
+  if (serverSelect) serverSelect.value = guildId;
+
+  // Load modules for this server
+  fetchGuildStructure(guildId);
+  fetchConfig(guildId);
+  fetchTickets();
+  if (typeof fetchWelcomeSettings === 'function') {
+    fetchWelcomeSettings(guildId);
+  }
+
+  // Switch to Panels view
+  switchView('panels', 'Panels');
+  showToast(`⚡ Switched to server: ${guildName}`, 'success');
+};
 
 // Toast Notifications
 function showToast(message, type = 'info') {
@@ -144,11 +266,11 @@ async function fetchStatus() {
 
       // Update designer preview footer
       const designerFooter = document.getElementById('designerPreviewFooter');
-      if (designerFooter && (designerFooter.textContent.includes('OG EMPIRE') || designerFooter.textContent.includes('Powered by'))) {
+      if (designerFooter && (designerFooter.textContent.includes('Kyvex') || designerFooter.textContent.includes('Powered by'))) {
         designerFooter.textContent = `Powered by ${cleanBotName}`;
       }
       const inputFooter = document.getElementById('inputFooterText');
-      if (inputFooter && (inputFooter.value === 'Powered by OG EMPIRE' || !inputFooter.value)) {
+      if (inputFooter && (inputFooter.value === 'Powered by Kyvex' || !inputFooter.value)) {
         inputFooter.value = `Powered by ${cleanBotName}`;
       }
 
@@ -676,7 +798,7 @@ function renderPanelsList(panels) {
     const color = p.color || '#00F0FF';
     const title = p.title || 'Help & Support';
     const desc = p.description || 'Click below to create a new support ticket 🎟️';
-    const footer = p.footerText || 'Powered by OG EMPIRE';
+    const footer = p.footerText || 'Powered by Kyvex';
     const chName = (p.channelName || 'general').toUpperCase();
     const createdDate = p.createdAt ? new Date(p.createdAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : 'Sep 06, 2026';
 
@@ -1400,7 +1522,7 @@ function loadPanelIntoDesigner(p) {
 
   if (titleEl) titleEl.value = p.title || 'Help & Support';
   if (descEl) descEl.value = p.description || '';
-  if (footerEl) footerEl.value = p.footerText || 'Powered by OG EMPIRE';
+  if (footerEl) footerEl.value = p.footerText || 'Powered by Kyvex';
   if (colorEl) colorEl.value = p.color || '#ff2449';
   if (hexEl) hexEl.value = (p.color || '#00F0FF').toUpperCase();
   if (swatch) swatch.style.backgroundColor = p.color || '#ff2449';
@@ -1488,7 +1610,7 @@ function openNewPanelDesigner() {
 
   if (titleEl) titleEl.value = 'Help & Support';
   if (descEl) descEl.value = 'Click below to create a new support ticket 🎟️';
-  if (footerEl) footerEl.value = 'Powered by OG EMPIRE';
+  if (footerEl) footerEl.value = 'Powered by Kyvex';
   if (colorEl) colorEl.value = '#ff2449';
   if (hexEl) hexEl.value = '#00F0FF';
   if (swatch) swatch.style.backgroundColor = '#ff2449';
@@ -1652,7 +1774,7 @@ function syncLivePreview() {
   const rawTitle = document.getElementById('inputEmbedTitle')?.value ?? 'Help & Support';
   const cleanTitle = rawTitle.replace(/\*\*/g, '').trim() || 'Help & Support';
   const desc = document.getElementById('inputEmbedDesc')?.value ?? 'Click below to create a new support ticket 🎟️';
-  const footer = document.getElementById('inputFooterText')?.value ?? 'Powered by OG EMPIRE';
+  const footer = document.getElementById('inputFooterText')?.value ?? 'Powered by Kyvex';
   const color = document.getElementById('inputEmbedColor')?.value || '#ff2449';
   const imgUrl = document.getElementById('inputImageUrl')?.value;
   const buttonLabel = document.getElementById('inputButtonLabel')?.value || 'Create Ticket';
@@ -1841,7 +1963,7 @@ async function deployTicketPanel() {
   const title = rawTitle.replace(/\*\*/g, '').trim() || 'Help & Support';
   const description = document.getElementById('inputEmbedDesc')?.value || 'Click below to create a new support ticket 🎟️';
   const bannerUrl = document.getElementById('inputImageUrl')?.value || null;
-  const footerText = document.getElementById('inputFooterText')?.value || 'Powered by OG EMPIRE';
+  const footerText = document.getElementById('inputFooterText')?.value || 'Powered by Kyvex';
   const color = document.getElementById('inputEmbedColor')?.value || '#00F0FF';
   const categoryId = document.getElementById('ticketCategorySelect')?.value || null;
   const buttonLabel = document.getElementById('inputButtonLabel')?.value || 'Create Ticket';
@@ -2894,18 +3016,18 @@ function initApp() {
   });
 
 
-  // Reset embed button (Clean OG EMPIRE default)
+  // Reset embed button (Clean Kyvex default)
   document.getElementById('btnResetEmbed')?.addEventListener('click', () => {
     document.getElementById('inputEmbedTitle').value = 'Help & Support';
     document.getElementById('inputEmbedDesc').value = 'Click below to create a new support ticket 🎟️';
-    document.getElementById('inputFooterText').value = 'Powered by OG EMPIRE';
+    document.getElementById('inputFooterText').value = 'Powered by Kyvex';
     document.getElementById('inputEmbedColor').value = '#ff2449';
     document.getElementById('inputHexColor').value = '#00F0FF';
     document.getElementById('colorSwatch').style.backgroundColor = '#ff2449';
     const imgEl = document.getElementById('inputImageUrl');
     if (imgEl) imgEl.value = '';
     syncLivePreview();
-    showToast('Embed reset to OG EMPIRE defaults', 'info');
+    showToast('Embed reset to Kyvex defaults', 'info');
   });
 
   // Dropdown Builder Action Buttons
@@ -3199,9 +3321,18 @@ function setupLandingPage() {
   };
 
   document.getElementById('btnLandingLogin')?.addEventListener('click', openLogin);
-  document.getElementById('landingNavDashboard')?.addEventListener('click', openLogin);
-  document.getElementById('btnCtaOpenDashboard')?.addEventListener('click', openLogin);
-  document.getElementById('footerOpenDashboard')?.addEventListener('click', openLogin);
+  document.getElementById('landingNavDashboard')?.addEventListener('click', () => {
+    showDashboard();
+    switchView('servers', 'Your Servers');
+  });
+  document.getElementById('btnCtaOpenDashboard')?.addEventListener('click', () => {
+    showDashboard();
+    switchView('servers', 'Your Servers');
+  });
+  document.getElementById('footerOpenDashboard')?.addEventListener('click', () => {
+    showDashboard();
+    switchView('servers', 'Your Servers');
+  });
 
   // Command showcase preview switcher
   const cmdTabs = document.querySelectorAll('.cmd-tab');
@@ -3215,7 +3346,7 @@ function setupLandingPage() {
           </div>
           <div class="discord-msg-body">
             <div class="discord-bot-meta">
-              <span class="bot-author">OG EMPIRE</span>
+              <span class="bot-author">Kyvex</span>
               <span class="bot-tag">BOT</span>
               <span class="bot-timestamp">Today at 6:18 PM</span>
             </div>
@@ -3247,7 +3378,7 @@ function setupLandingPage() {
           </div>
           <div class="discord-msg-body">
             <div class="discord-bot-meta">
-              <span class="bot-author">OG EMPIRE</span>
+              <span class="bot-author">Kyvex</span>
               <span class="bot-tag">BOT</span>
               <span class="bot-timestamp">Today at 6:19 PM</span>
             </div>
@@ -3279,12 +3410,12 @@ function setupLandingPage() {
           </div>
           <div class="discord-msg-body">
             <div class="discord-bot-meta">
-              <span class="bot-author">OG EMPIRE</span>
+              <span class="bot-author">Kyvex</span>
               <span class="bot-tag">BOT</span>
               <span class="bot-timestamp">Today at 6:20 PM</span>
             </div>
             <div class="discord-embed-card" style="border-left-color: #38bdf8;">
-              <div class="embed-title">🎟️ OG REGEDIT &bull; SUPPORT &amp; ORDER PANEL</div>
+              <div class="embed-title">🎟️ KYVEX &bull; SUPPORT &amp; ORDER PANEL</div>
               <div class="embed-desc">Select an inquiry category from the dropdown menu below to initiate a private support ticket.</div>
               <div style="background: #23202b; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.65rem 0.85rem; margin-top: 0.75rem; color: #94a3b8; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
                 <span>🛒 Main Account Products &bull; Select to Order</span>
@@ -3301,7 +3432,7 @@ function setupLandingPage() {
           </div>
           <div class="discord-msg-body">
             <div class="discord-bot-meta">
-              <span class="bot-author">OG EMPIRE</span>
+              <span class="bot-author">Kyvex</span>
               <span class="bot-tag">BOT</span>
               <span class="bot-timestamp">Today at 6:21 PM</span>
             </div>
@@ -3340,7 +3471,81 @@ function setupLandingPage() {
     });
   }
 
-  // Close Login Modal
+  // Zynrax Topbar Events
+  document.getElementById('zynraxNavHome')?.addEventListener('click', () => {
+    document.querySelectorAll('.zynrax-nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('zynraxNavHome')?.classList.add('active');
+    showLanding();
+  });
+
+  document.getElementById('zynraxNavDashboard')?.addEventListener('click', () => {
+    document.querySelectorAll('.zynrax-nav-item').forEach(el => el.classList.remove('active'));
+    document.getElementById('zynraxNavDashboard')?.classList.add('active');
+    showDashboard();
+    switchView('servers', 'Your Servers');
+  });
+
+  document.getElementById('zynraxBtnPremium')?.addEventListener('click', () => {
+    showToast('💎 Kyvex Premium: Sub-millisecond defense & Lossless FLAC active!', 'success');
+  });
+
+  // Zynrax Login Modal Open / Close
+  const zynraxModal = document.getElementById('zynraxLoginModal');
+  const openZynraxLogin = (e) => {
+    if (e) e.preventDefault();
+    if (zynraxModal) zynraxModal.style.display = 'flex';
+  };
+  const closeZynraxLogin = () => {
+    if (zynraxModal) zynraxModal.style.display = 'none';
+  };
+
+  document.getElementById('zynraxBtnLogin')?.addEventListener('click', openZynraxLogin);
+  document.getElementById('btnCloseZynraxLogin')?.addEventListener('click', closeZynraxLogin);
+  if (zynraxModal) {
+    zynraxModal.addEventListener('click', (e) => {
+      if (e.target === zynraxModal) closeZynraxLogin();
+    });
+  }
+
+  // Discord Login Button inside Modal
+  document.getElementById('btnZynraxDiscordLogin')?.addEventListener('click', () => {
+    localStorage.setItem('og_logged_in', 'true');
+    closeZynraxLogin();
+    showDashboard();
+    switchView('servers', 'Your Servers');
+    showToast('Welcome to Kyvex Dashboard!', 'success');
+  });
+
+  // Back to Servers Button (in topbar next to breadcrumb)
+  document.getElementById('btnBackToServers')?.addEventListener('click', () => {
+    switchView('servers', 'Your Servers');
+  });
+
+  // Refresh Servers Grid button
+  document.getElementById('btnRefreshServerGrid')?.addEventListener('click', () => {
+    fetchAllGuilds();
+    showToast('Refreshed server list', 'info');
+  });
+
+  // Real-time search filter for servers grid
+  const serverSearchInput = document.getElementById('serverSearchInput');
+  if (serverSearchInput) {
+    serverSearchInput.addEventListener('input', (e) => {
+      const q = (e.target.value || '').trim().toLowerCase();
+      if (!q) {
+        renderServerGrid(allCachedGuilds);
+        return;
+      }
+      const filtered = allCachedGuilds.filter(s => 
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        (s.id && s.id.includes(q)) ||
+        (s.role && s.role.toLowerCase().includes(q))
+      );
+      renderServerGrid(filtered);
+    });
+  }
+
+  // Close Login Modal (Legacy)
   const closeLogin = () => {
     if (loginModal) loginModal.style.display = 'none';
   };
@@ -3356,7 +3561,8 @@ function setupLandingPage() {
     localStorage.setItem('og_logged_in', 'true');
     closeLogin();
     showDashboard();
-    showToast('Welcome to OG EMPIRE Dashboard!', 'success');
+    switchView('servers', 'Your Servers');
+    showToast('Welcome to Kyvex Dashboard!', 'success');
   });
 
   // Switch to Landing from Dashboard (Topbar & Sidebar buttons)

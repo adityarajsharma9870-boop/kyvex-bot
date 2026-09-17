@@ -192,7 +192,7 @@ module.exports = {
           { name: 'Total Verified', value: `\`${config.verifiedCount || 0} members\``, inline: true },
           { name: 'Message ID', value: config.messageId ? `\`${config.messageId}\`` : '`None`', inline: true }
         )
-        .setFooter({ text: 'OG EMPIRE Security Suite' })
+        .setFooter({ text: 'Kyvex Security Suite' })
         .setTimestamp();
 
       return interaction.reply({ embeds: [embed], ephemeral: true });

@@ -265,7 +265,7 @@ module.exports = {
       const { totalWarnings } = warningManager.addWarning(
         guild.id,
         member.id,
-        'OG EMPIRE Auto-Mod',
+        'Kyvex Auto-Mod',
         violation.reason,
         violation.type
       );
@@ -352,7 +352,7 @@ module.exports = {
               .setColor('#FF3366')
               .setTitle(`🛡️ Security Warning • [${guild.name}]`)
               .setDescription(
-                `Your message in **#${message.channel.name}** was automatically blocked by **OG EMPIRE Auto-Mod**.\n\n` +
+                `Your message in **#${message.channel.name}** was automatically blocked by **Kyvex Auto-Mod**.\n\n` +
                 `• **Violation:** \`${violation.reason}\`\n` +
                 `• **Total Strikes:** \`${totalWarnings}\`\n` +
                 `• **Action Taken:** **${punishmentApplied}**\n\n` +
@@ -374,7 +374,7 @@ module.exports = {
           `**Progressive Action:** **${punishmentApplied}** (Strike #${totalWarnings})\n` +
           `**Filtered Content Snippet:** \`${content.substring(0, 200) || violation.detail}\``
         )
-        .setFooter({ text: 'OG EMPIRE Auto-Mod Matrix' })
+        .setFooter({ text: 'Kyvex Auto-Mod Matrix' })
         .setTimestamp();
 
       await logManager.send(guild, 'mod', embed);

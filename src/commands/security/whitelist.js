@@ -39,7 +39,7 @@ module.exports = {
         : '*No additional administrators whitelisted yet.*';
 
       const embed = createAstrialEmbed()
-        .setTitle('🛡️ OG EMPIRE • Whitelisted Administrators')
+        .setTitle('🛡️ Kyvex • Whitelisted Administrators')
         .setDescription(
           `**Server Owner (Permanent):** <@${interaction.guild.ownerId}>\n\n` +
           `__**Authorized Whitelist:**__\n${list}\n\n` +

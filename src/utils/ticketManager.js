@@ -210,7 +210,7 @@ const ticketManager = {
 
     const title = options.title || 'Help & Support';
     const description = options.description || 'Click below to create a new support ticket 🎟️';
-    const footerText = options.footerText || `Powered by ${guild.client?.user?.username || 'OG EMPIRE'}`;
+    const footerText = options.footerText || `Powered by ${guild.client?.user?.username || 'Kyvex'}`;
     const bannerUrl = options.bannerUrl;
     const color = options.color || '#F1C40F';
 
@@ -561,7 +561,7 @@ const ticketManager = {
       };
       saveTicketData(data);
 
-      const botName = guild.client?.user?.username || 'OG EMPIRE';
+      const botName = guild.client?.user?.username || 'Kyvex';
       const welcomeEmbed = new EmbedBuilder()
         .setColor('#F1C40F')
         .setAuthor({

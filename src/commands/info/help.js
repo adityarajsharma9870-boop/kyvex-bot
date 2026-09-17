@@ -11,19 +11,19 @@ const config = require('../../config');
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('help')
-    .setDescription('Displays the full OG EMPIRE command directory and help menu'),
+    .setDescription('Displays the full Kyvex command directory and help menu'),
 
   category: 'info',
 
   async execute(interaction, client) {
     const mainEmbed = createAstrialEmbed()
       .setAuthor({
-        name: 'OG EMPIRE • Commands Directory',
+        name: 'Kyvex • Commands Directory',
         iconURL: client.user.displayAvatarURL({ dynamic: true })
       })
-      .setTitle('👑 Welcome to OG EMPIRE Mega Bot')
+      .setTitle('👑 Welcome to Kyvex Mega Bot')
       .setDescription(
-        '**OG EMPIRE** is an all-in-one High Quality Discord Bot featuring **High-Security Anti-Nuke Defense**, **Owner Whitelist Protection**, **Full Moderation Suite**, and **High-Definition Music Playback**!\n\n' +
+        '**Kyvex** is an all-in-one High Quality Discord Bot featuring **High-Security Anti-Nuke Defense**, **Owner Whitelist Protection**, **Full Moderation Suite**, and **High-Definition Music Playback**!\n\n' +
         'Select a category from the dropdown menu below to view detailed commands.'
       )
       .addFields([
@@ -117,7 +117,7 @@ module.exports = {
         newEmbed = createAstrialEmbed()
           .setTitle('🛡️ Security & Anti-Nuke System')
           .setDescription(
-            '**OG EMPIRE Anti-Nuke** protects your server from rogue administrators and nukers.\n' +
+            '**Kyvex Anti-Nuke** protects your server from rogue administrators and nukers.\n' +
             'Even if a rogue user has the Discord `Administrator` permission, they **CANNOT** delete channels, delete roles, mass ban, kick, or invite bots unless the Server Owner explicitly whitelists them!'
           )
           .addFields([
