@@ -1,17 +1,16 @@
 {
   "version": 2,
   "name": "kyvex-dashboard",
-  "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
+      "source": "/api/:match*",
+      "destination": "https://kyvex-bot.onrender.com/api/:match*"
     },
     {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/invite",
+      "destination": "https://kyvex-bot.onrender.com/invite"
     }
   ]
 }
