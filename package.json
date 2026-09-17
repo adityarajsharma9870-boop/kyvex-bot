@@ -1,7 +1,7 @@
 {
-  "name": "astrial-music-bot",
+  "name": "kyvex-bot",
   "version": "1.0.0",
-  "description": "High Quality Astrial-inspired Discord Music Bot with modern Slash Commands, interactive controller, and multi-source playback",
+  "description": "High Performance Kyvex Discord Bot with modern Slash Commands, interactive music controller, cyber-defense security, and web dashboard",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -10,7 +10,7 @@
   "keywords": [
     "discord",
     "music-bot",
-    "astrial",
+    "kyvex",
     "distube",
     "discord-js"
   ],

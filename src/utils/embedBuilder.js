@@ -90,19 +90,22 @@ function createErrorEmbed(title, description) {
 }
 
 /**
- * Creates standard general embed
+ * Creates standard general Kyvex embed
  */
-function createAstrialEmbed() {
+function createKyvexEmbed() {
   return new EmbedBuilder()
     .setColor(config.embedColor)
     .setFooter({ text: config.footerText })
     .setTimestamp();
 }
 
+const createAstrialEmbed = createKyvexEmbed;
+
 module.exports = {
   createProgressBar,
   createNowPlayingEmbed,
   createSuccessEmbed,
   createErrorEmbed,
+  createKyvexEmbed,
   createAstrialEmbed
 };

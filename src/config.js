@@ -7,8 +7,14 @@ module.exports = {
   dashboardUrl: process.env.DASHBOARD_URL || 'http://localhost:3000',
   guildId: process.env.GUILD_ID || '',
   defaultVolume: parseInt(process.env.DEFAULT_VOLUME, 10) || 70,
-  embedColor: process.env.BOT_EMBED_COLOR || '#5865F2', // Kyvex signature color
-  footerText: process.env.BOT_FOOTER_TEXT || 'Kyvex • Modern Discord Automation & Cyber-Defense',
+  embedColor: process.env.BOT_EMBED_COLOR || '#ff2449', // Kyvex signature neon red
+  footerText: (() => {
+    const raw = process.env.BOT_FOOTER_TEXT || '';
+    if (!raw || raw.toLowerCase().includes('og empire') || raw.toLowerCase().includes('astrial')) {
+      return 'Kyvex • High Quality Music & Cyber-Defense';
+    }
+    return raw;
+  })(),
   icons: {
     play: '▶️',
     pause: '⏸️',

@@ -97,18 +97,11 @@ module.exports = {
         });
       }
     } catch (ytErr) {
-      console.error('Smart YouTube search playback error:', ytErr);
-      return interaction.editReply({
-        embeds: [
-          createErrorEmbed(
-            'Playback Error',
-            `Failed to stream audio from YouTube: \`${ytErr.message || 'Unknown error'}\``
-          )
-        ]
-      });
+      console.warn('YouTube search playback attempt failed, switching to SoundCloud fallback:', ytErr?.message || ytErr);
+      // Seamlessly fall through to SoundCloud fallback below instead of returning error immediately
     }
 
-    // 3. Fallback: SoundCloud Search only if no YouTube result existed
+    // 3. Fallback: High-Quality SoundCloud Streaming
     try {
       const scResults = await scPlugin.search(rawQuery, 'track', 1);
       if (scResults && scResults.length > 0 && scResults[0].url) {
@@ -118,24 +111,28 @@ module.exports = {
           message: null
         });
 
+        const trackName = scResults[0].name || rawQuery;
+        const trackUrl = scResults[0].url;
+
         return interaction.editReply({
           embeds: [
             createSuccessEmbed(
-              'Found on SoundCloud',
-              `🎶 Found: **${scResults[0].name}**\nConnecting to **${voiceChannel.name}**...`
+              '🎶 SoundCloud Track Loaded',
+              `▶ **[${trackName}](${trackUrl})**\n\n` +
+              `🔊 **Voice Channel:** ${voiceChannel.name} • ⚡ **Stream:** High-Fidelity Audio`
             )
           ]
         });
       }
     } catch (scErr) {
-      console.error('SoundCloud fallback search error:', scErr);
+      console.error('SoundCloud fallback search error:', scErr?.message || scErr);
     }
 
     return interaction.editReply({
       embeds: [
         createErrorEmbed(
           'Track Not Found',
-          `Could not find any matching song for: **${rawQuery}**\n*Try searching with the exact song title or provide a direct YouTube link!*`
+          `Could not stream any matching song for: **${rawQuery}**\n\n*Tip: Try searching with the artist name and song title, or paste a direct Spotify / SoundCloud / YouTube URL!*`
         )
       ]
     });

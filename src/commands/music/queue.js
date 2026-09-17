@@ -60,7 +60,7 @@ module.exports = {
           { name: '⏱️ Total Duration', value: `\`${queue.formattedDuration}\``, inline: true },
           { name: '🔁 Loop Mode', value: `\`${['Off', 'Track', 'Queue'][queue.repeatMode] || 'Off'}\``, inline: true }
         ])
-        .setFooter({ text: `Page ${page + 1} of ${totalPages} • Astrial Music` });
+        .setFooter({ text: `Page ${page + 1} of ${totalPages} • Kyvex Music` });
     };
 
     if (totalPages <= 1) {

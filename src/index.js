@@ -6,7 +6,7 @@ const { DisTube } = require('distube');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { DirectLinkPlugin } = require('@distube/direct-link');
-const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { KyvexYtDlpPlugin } = require('./plugins/kyvexYtDlp');
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
@@ -64,7 +64,7 @@ client.distube = new DisTube(client, {
     new SpotifyPlugin(),
     new SoundCloudPlugin(),
     new DirectLinkPlugin(),
-    new YtDlpPlugin({ update: false })
+    new KyvexYtDlpPlugin({ update: false })
   ]
 });
 
