@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /assets/
+Disallow: /api/
+
+Sitemap: https://kyvex.com/sitemap.xml
