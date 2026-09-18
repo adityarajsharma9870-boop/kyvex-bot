@@ -41,7 +41,7 @@ const CATEGORIES = [
     id: 'cat_full',
     label: 'Full Whitelist',
     desc: 'Bypass all AntiNuke system filters',
-    emoji: '🪄',
+    emoji: '✨',
     modules: WHITELIST_MODULES.map(m => m.id),
     type: 'grant_all'
   },
@@ -49,7 +49,7 @@ const CATEGORIES = [
     id: 'cat_identity',
     label: 'Server Identity',
     desc: 'Bypass Vanity/Name/Icon/Banner',
-    emoji: '🗹',
+    emoji: '☑️',
     modules: ['antiGuildUpdate']
   },
   {
@@ -63,7 +63,7 @@ const CATEGORIES = [
     id: 'cat_channels',
     label: 'Channel Filters',
     desc: 'Bypass create/delete/update channel',
-    emoji: '📁',
+    emoji: '⚙️',
     modules: ['antiChannelCreate', 'antiChannelDelete', 'antiChannelUpdate']
   },
   {
@@ -112,8 +112,8 @@ function buildWhitelistEmbed(guild, targetUser, permissions = {}) {
   });
 
   const embed = new EmbedBuilder()
-    .setColor(config.embedColor || '#ff2449')
-    .setTitle('Whitelist Configuration for Current Server')
+    .setColor('#2b2d31')
+    .setTitle('Kyvex Security Protocol — Whitelist Configuration')
     .setDescription(
       `${lines.join('\n')}\n\n` +
       `│ **Target:** <@${targetUser.id}>`
@@ -126,7 +126,7 @@ function buildWhitelistEmbed(guild, targetUser, permissions = {}) {
 }
 
 function buildActionComponents(targetUserId, permissions = {}, disabled = false) {
-  // 1. Category / Full Whitelist Select Menu (Matches the screenshot exactly)
+  // 1. Exact Category / Full Whitelist Select Menu matching screenshot
   const categoryRow = new ActionRowBuilder().addComponents(
     new StringSelectMenuBuilder()
       .setCustomId(`wl_cat_${targetUserId}`)
@@ -165,7 +165,7 @@ function buildActionComponents(targetUserId, permissions = {}, disabled = false)
   const buttonRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`wl_all_${targetUserId}`)
-      .setLabel('Whitelist All')
+      .setLabel('Full Whitelist')
       .setEmoji('🟢')
       .setStyle(ButtonStyle.Success)
       .setDisabled(disabled),
@@ -190,6 +190,21 @@ function buildActionComponents(targetUserId, permissions = {}, disabled = false)
   );
 
   return [categoryRow, moduleRow, buttonRow];
+}
+
+async function safeReply(interaction, payload) {
+  try {
+    if (interaction.deferred || interaction.replied) {
+      return await interaction.editReply(payload);
+    } else {
+      return await interaction.reply(payload);
+    }
+  } catch (error) {
+    if (error.code === 40060 || error.code === 'InteractionAlreadyReplied') {
+      return await interaction.editReply(payload).catch(() => {});
+    }
+    throw error;
+  }
 }
 
 module.exports = {
@@ -234,7 +249,6 @@ module.exports = {
   buildActionComponents,
 
   async execute(interaction, client) {
-    await interaction.deferReply().catch(() => {});
     const sub = interaction.options.getSubcommand();
     const guild = interaction.guild;
     const guildConfig = securityManager.getConfig(guild.id);
@@ -245,10 +259,10 @@ module.exports = {
       const details = guildConfig.whitelistDetails || {};
 
       if (list.length === 0) {
-        return interaction.editReply({
+        return safeReply(interaction, {
           embeds: [
             new EmbedBuilder()
-              .setColor(config.embedColor || '#ff2449')
+              .setColor('#2b2d31')
               .setTitle('🛡️ Kyvex • Whitelisted Administrators')
               .setDescription(
                 `**Server Owner (Permanent Immunity):** <@${guild.ownerId}>\n\n` +
@@ -263,12 +277,12 @@ module.exports = {
         const userDetails = details[id];
         const grantedCount = userDetails?.permissions
           ? Object.values(userDetails.permissions).filter(Boolean).length
-          : 22; // Default full bypass if not specified
+          : 22;
         return `\`${index + 1}.\` <@${id}> (\`${id}\`) — **${grantedCount}/22 Modules Allowed**`;
       }).join('\n');
 
       const embed = new EmbedBuilder()
-        .setColor(config.embedColor || '#ff2449')
+        .setColor('#2b2d31')
         .setTitle('🛡️ Kyvex • Whitelisted Administrators')
         .setDescription(
           `**Server Owner (Permanent Immunity):** <@${guild.ownerId}>\n\n` +
@@ -278,25 +292,26 @@ module.exports = {
         .setFooter({ text: 'Powered by Kyvex Development' })
         .setTimestamp();
 
-      return interaction.editReply({ embeds: [embed] });
+      return safeReply(interaction, { embeds: [embed] });
     }
 
     // 2. Owner / Extra Owner Authorization Check
     if (!securityManager.isOwnerOrExtraOwner(guild, interaction.user.id)) {
-      return interaction.editReply({
+      return safeReply(interaction, {
         embeds: [
           createErrorEmbed(
             'Owner Only Command',
             '⛔ Sirf **Server Owner** ya **Extra Owner** hi Anti-Nuke Whitelist manage kar sakte hain!'
           )
-        ]
+        ],
+        ephemeral: true
       });
     }
 
     // 3. Reset Subcommand
     if (sub === 'reset') {
       securityManager.resetWhitelist(guild.id);
-      return interaction.editReply({
+      return safeReply(interaction, {
         embeds: [
           createSuccessEmbed(
             'Whitelist Cleared',
@@ -309,14 +324,16 @@ module.exports = {
     const targetUser = interaction.options.getUser('user');
 
     if (targetUser.id === guild.ownerId) {
-      return interaction.editReply({
-        embeds: [createErrorEmbed('Owner Already Immune', 'Server Owner permanently immune aur supreme whitelisted hai.')]
+      return safeReply(interaction, {
+        embeds: [createErrorEmbed('Owner Already Immune', 'Server Owner permanently immune aur supreme whitelisted hai.')],
+        ephemeral: true
       });
     }
 
     if (targetUser.bot) {
-      return interaction.editReply({
-        embeds: [createErrorEmbed('Invalid Target', 'Bot accounts ko user whitelist me add nahi kiya ja sakta.')]
+      return safeReply(interaction, {
+        embeds: [createErrorEmbed('Invalid Target', 'Bot accounts ko user whitelist me add nahi kiya ja sakta.')],
+        ephemeral: true
       });
     }
 
@@ -324,13 +341,14 @@ module.exports = {
     if (sub === 'remove') {
       const list = guildConfig.adminWhitelist || guildConfig.whitelist || [];
       if (!list.includes(targetUser.id)) {
-        return interaction.editReply({
-          embeds: [createErrorEmbed('Not Whitelisted', `${targetUser} whitelist list me nahi hai.`)]
+        return safeReply(interaction, {
+          embeds: [createErrorEmbed('Not Whitelisted', `${targetUser} whitelist list me nahi hai.`)],
+          ephemeral: true
         });
       }
 
       securityManager.removeAdminWhitelist(guild.id, targetUser.id);
-      return interaction.editReply({
+      return safeReply(interaction, {
         embeds: [
           createSuccessEmbed(
             'Whitelist Removed',
@@ -340,33 +358,20 @@ module.exports = {
       });
     }
 
-    // 5. Add Subcommand (Quick Full Whitelist)
+    // 5. Add or Config Subcommand (Both load the interactive visual matrix)
+    let permissions;
     if (sub === 'add') {
-      const allPerms = {};
-      WHITELIST_MODULES.forEach((m) => { allPerms[m.id] = true; });
-
-      securityManager.saveWhitelistUser(guild.id, targetUser.id, allPerms, {
+      permissions = {};
+      WHITELIST_MODULES.forEach((m) => { permissions[m.id] = true; });
+      securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
         username: targetUser.username,
         displayName: targetUser.displayName,
         avatar: targetUser.displayAvatarURL({ dynamic: true })
       });
-
-      const embed = buildWhitelistEmbed(guild, targetUser, allPerms);
-      const components = buildActionComponents(targetUser.id, allPerms);
-
-      return interaction.editReply({
-        content: `✅ ${targetUser} has been **fully whitelisted** with all 22 Anti-Nuke bypass permissions!`,
-        embeds: [embed],
-        components
-      });
-    }
-
-    // 6. Config Subcommand (Interactive Configuration Matrix)
-    if (sub === 'config') {
+    } else {
       const currentDetails = guildConfig.whitelistDetails?.[targetUser.id];
-      let permissions = currentDetails?.permissions ? { ...currentDetails.permissions } : null;
+      permissions = currentDetails?.permissions ? { ...currentDetails.permissions } : null;
 
-      // If user is whitelisted without specific details, default all to true; otherwise default all to false
       if (!permissions) {
         const isAlreadyWhitelisted = (guildConfig.adminWhitelist || guildConfig.whitelist || []).includes(targetUser.id);
         permissions = {};
@@ -374,63 +379,45 @@ module.exports = {
           permissions[m.id] = isAlreadyWhitelisted;
         });
       }
+    }
 
-      const initialEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
-      const initialComponents = buildActionComponents(targetUser.id, permissions);
+    const initialEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+    const initialComponents = buildActionComponents(targetUser.id, permissions);
 
-      const response = await interaction.editReply({
-        embeds: [initialEmbed],
-        components: initialComponents
-      });
+    const response = await safeReply(interaction, {
+      embeds: [initialEmbed],
+      components: initialComponents,
+      fetchReply: true
+    });
 
-      // Collector for real-time Discord interaction
-      const collector = response.createMessageComponentCollector({
-        filter: (i) => i.user.id === interaction.user.id,
-        time: 5 * 60 * 1000 // 5 minutes active
-      });
+    if (!response) return;
 
-      collector.on('collect', async (i) => {
-        const customId = i.customId;
+    // Collector for real-time Discord interaction
+    const collector = response.createMessageComponentCollector({
+      filter: (i) => i.user.id === interaction.user.id,
+      time: 5 * 60 * 1000 // 5 minutes active
+    });
 
-        // A. Category / Full Action Selection (Dropdown 1)
-        if (i.isStringSelectMenu() && customId.startsWith('wl_cat_')) {
-          const selectedCatId = i.values[0];
-          const selectedCat = CATEGORIES.find(c => c.id === selectedCatId);
+    collector.on('collect', async (i) => {
+      const customId = i.customId;
 
-          if (selectedCat) {
-            if (selectedCat.type === 'grant_all') {
-              WHITELIST_MODULES.forEach(m => { permissions[m.id] = true; });
-            } else if (selectedCat.type === 'revoke_all') {
-              WHITELIST_MODULES.forEach(m => { permissions[m.id] = false; });
-            } else {
-              // Toggle entire category
-              const allCurrentlyAllowed = selectedCat.modules.every(modId => permissions[modId] === true);
-              selectedCat.modules.forEach(modId => {
-                permissions[modId] = !allCurrentlyAllowed;
-              });
-            }
+      // A. Category / Full Action Selection (Dropdown 1)
+      if (i.isStringSelectMenu() && customId.startsWith('wl_cat_')) {
+        const selectedCatId = i.values[0];
+        const selectedCat = CATEGORIES.find(c => c.id === selectedCatId);
 
-            securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
-              username: targetUser.username,
-              displayName: targetUser.displayName,
-              avatar: targetUser.displayAvatarURL({ dynamic: true })
-            });
-
-            const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
-            const updatedComponents = buildActionComponents(targetUser.id, permissions);
-
-            await i.update({
-              embeds: [updatedEmbed],
-              components: updatedComponents
+        if (selectedCat) {
+          if (selectedCat.type === 'grant_all') {
+            WHITELIST_MODULES.forEach(m => { permissions[m.id] = true; });
+          } else if (selectedCat.type === 'revoke_all') {
+            WHITELIST_MODULES.forEach(m => { permissions[m.id] = false; });
+          } else {
+            // Toggle entire category
+            const allCurrentlyAllowed = selectedCat.modules.every(modId => permissions[modId] === true);
+            selectedCat.modules.forEach(modId => {
+              permissions[modId] = !allCurrentlyAllowed;
             });
           }
-          return;
-        }
-
-        // B. 1-by-1 Individual Module Selection (Dropdown 2)
-        if (i.isStringSelectMenu() && customId.startsWith('wl_mod_')) {
-          const selectedModule = i.values[0];
-          permissions[selectedModule] = !permissions[selectedModule];
 
           securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
             username: targetUser.username,
@@ -445,85 +432,106 @@ module.exports = {
             embeds: [updatedEmbed],
             components: updatedComponents
           });
-          return;
         }
+        return;
+      }
 
-        // C. Whitelist All (Grant all 22)
-        if (customId.startsWith('wl_all_')) {
-          WHITELIST_MODULES.forEach((m) => { permissions[m.id] = true; });
+      // B. 1-by-1 Individual Module Selection (Dropdown 2)
+      if (i.isStringSelectMenu() && customId.startsWith('wl_mod_')) {
+        const selectedModule = i.values[0];
+        permissions[selectedModule] = !permissions[selectedModule];
 
-          securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
-            username: targetUser.username,
-            displayName: targetUser.displayName,
-            avatar: targetUser.displayAvatarURL({ dynamic: true })
-          });
+        securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
+          username: targetUser.username,
+          displayName: targetUser.displayName,
+          avatar: targetUser.displayAvatarURL({ dynamic: true })
+        });
 
-          const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
-          const updatedComponents = buildActionComponents(targetUser.id, permissions);
+        const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+        const updatedComponents = buildActionComponents(targetUser.id, permissions);
 
-          await i.update({
-            embeds: [updatedEmbed],
-            components: updatedComponents
-          });
-          return;
-        }
+        await i.update({
+          embeds: [updatedEmbed],
+          components: updatedComponents
+        });
+        return;
+      }
 
-        // D. Revoke All (Deny all 22)
-        if (customId.startsWith('wl_none_')) {
-          WHITELIST_MODULES.forEach((m) => { permissions[m.id] = false; });
+      // C. Whitelist All Button
+      if (customId.startsWith('wl_all_')) {
+        WHITELIST_MODULES.forEach((m) => { permissions[m.id] = true; });
 
-          securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
-            username: targetUser.username,
-            displayName: targetUser.displayName,
-            avatar: targetUser.displayAvatarURL({ dynamic: true })
-          });
+        securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
+          username: targetUser.username,
+          displayName: targetUser.displayName,
+          avatar: targetUser.displayAvatarURL({ dynamic: true })
+        });
 
-          const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
-          const updatedComponents = buildActionComponents(targetUser.id, permissions);
+        const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+        const updatedComponents = buildActionComponents(targetUser.id, permissions);
 
-          await i.update({
-            embeds: [updatedEmbed],
-            components: updatedComponents
-          });
-          return;
-        }
+        await i.update({
+          embeds: [updatedEmbed],
+          components: updatedComponents
+        });
+        return;
+      }
 
-        // E. Remove from Whitelist
-        if (customId.startsWith('wl_remove_')) {
-          securityManager.removeAdminWhitelist(guild.id, targetUser.id);
-          collector.stop('removed');
+      // D. Revoke All Button
+      if (customId.startsWith('wl_none_')) {
+        WHITELIST_MODULES.forEach((m) => { permissions[m.id] = false; });
 
-          await i.update({
-            content: `🗑️ ${targetUser} has been completely removed from the server whitelist.`,
-            embeds: [],
-            components: []
-          });
-          return;
-        }
+        securityManager.saveWhitelistUser(guild.id, targetUser.id, permissions, {
+          username: targetUser.username,
+          displayName: targetUser.displayName,
+          avatar: targetUser.displayAvatarURL({ dynamic: true })
+        });
 
-        // F. Save & Close
-        if (customId.startsWith('wl_close_')) {
-          collector.stop('closed');
+        const updatedEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+        const updatedComponents = buildActionComponents(targetUser.id, permissions);
 
-          const finalEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+        await i.update({
+          embeds: [updatedEmbed],
+          components: updatedComponents
+        });
+        return;
+      }
+
+      // E. Remove from Whitelist
+      if (customId.startsWith('wl_remove_')) {
+        securityManager.removeAdminWhitelist(guild.id, targetUser.id);
+        collector.stop('removed');
+
+        await i.update({
+          content: `🗑️ ${targetUser} has been completely removed from the server whitelist.`,
+          embeds: [],
+          components: []
+        });
+        return;
+      }
+
+      // F. Save & Close
+      if (customId.startsWith('wl_close_')) {
+        collector.stop('closed');
+
+        const finalEmbed = buildWhitelistEmbed(guild, targetUser, permissions);
+        const disabledComponents = buildActionComponents(targetUser.id, permissions, true);
+
+        await i.update({
+          content: `💾 Whitelist configuration saved for ${targetUser}!`,
+          embeds: [finalEmbed],
+          components: disabledComponents
+        });
+      }
+    });
+
+    collector.on('end', async (_, reason) => {
+      if (reason !== 'removed' && reason !== 'closed') {
+        try {
           const disabledComponents = buildActionComponents(targetUser.id, permissions, true);
-
-          await i.update({
-            content: `💾 Whitelist configuration saved for ${targetUser}!`,
-            embeds: [finalEmbed],
-            components: disabledComponents
-          });
-        }
-      });
-
-      collector.on('end', async (_, reason) => {
-        if (reason !== 'removed' && reason !== 'closed') {
-          try {
-            const disabledComponents = buildActionComponents(targetUser.id, permissions, true);
-            await response.edit({ components: disabledComponents });
-          } catch (e) {}
-        }
-      });
-    }
+          await response.edit({ components: disabledComponents });
+        } catch (e) {}
+      }
+    });
   }
 };

@@ -218,10 +218,12 @@
     "autoplay": false,
     "extraOwners": [],
     "adminWhitelist": [
-      "1466812544130875578"
+      "1466812544130875578",
+      "1406667252119375882"
     ],
     "whitelist": [
-      "1466812544130875578"
+      "1466812544130875578",
+      "1406667252119375882"
     ],
     "whitelistDetails": {
       "1466812544130875578": {
@@ -254,6 +256,37 @@
           "antiWebhookUpdate": true
         },
         "updatedAt": "2026-09-18T19:06:05.302Z"
+      },
+      "1406667252119375882": {
+        "id": "1406667252119375882",
+        "username": "himanshu_f_",
+        "displayName": "sʜɪғᴛᴇᴅ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴀᴄᴄᴏᴜɴᴛ",
+        "avatar": "https://cdn.discordapp.com/avatars/1406667252119375882/562404b3af4ceed11d41d3d0e7f1236a.webp",
+        "permissions": {
+          "antiBan": true,
+          "antiUnban": true,
+          "antiKick": true,
+          "antiPrune": true,
+          "antiBotAdd": true,
+          "antiChannelCreate": true,
+          "antiChannelDelete": true,
+          "antiChannelUpdate": true,
+          "antiRoleCreate": true,
+          "antiRoleDelete": true,
+          "antiRoleUpdate": true,
+          "antiMemberUpdate": true,
+          "antiEmojiCreate": true,
+          "antiEmojiDelete": true,
+          "antiEmojiUpdate": true,
+          "antiEveryonePing": true,
+          "antiRolePing": true,
+          "antiIntegration": true,
+          "antiGuildUpdate": true,
+          "antiWebhookCreate": true,
+          "antiWebhookDelete": true,
+          "antiWebhookUpdate": true
+        },
+        "updatedAt": "2026-09-18T19:10:20.308Z"
       }
     },
     "logChannel": "1550064822023102615",
