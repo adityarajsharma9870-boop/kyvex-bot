@@ -97,7 +97,8 @@ module.exports = {
         interaction.customId === 'help_category_select' ||
         interaction.customId === 'q_prev' ||
         interaction.customId === 'q_next' ||
-        interaction.customId.startsWith('upi_')
+        interaction.customId.startsWith('upi_') ||
+        interaction.customId.startsWith('wl_')
       ) {
         return;
       }

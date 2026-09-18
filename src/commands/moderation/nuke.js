@@ -17,7 +17,7 @@ module.exports = {
         embeds: [
           createErrorEmbed(
             'Administrator Whitelist Required',
-            '⛔ Aapke paas chahe **Administrator** role ho, lekin jab tak **Server Owner** aapko `/adminwhitelist add` se whitelist nahi karega, tab tak aap koi action nahi le sakte!'
+            '⛔ Aapke paas chahe **Administrator** role ho, lekin jab tak **Server Owner** aapko `/whitelist add` se whitelist nahi karega, tab tak aap koi action nahi le sakte!'
           )
         ],
         ephemeral: true
