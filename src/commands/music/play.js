@@ -58,12 +58,43 @@ module.exports = {
           ]
         });
       } catch (err) {
-        console.error('Direct URL playback error:', err);
+        console.warn('Direct URL playback failed, attempting search fallback:', err.message || err);
+
+        // If it was a YouTube or external URL, attempt SoundCloud fallback
+        if (rawQuery.includes('youtube.com') || rawQuery.includes('youtu.be')) {
+          try {
+            // Extract video ID or query from URL
+            const urlObj = new URL(rawQuery);
+            const videoId = urlObj.searchParams.get('v') || urlObj.pathname.replace('/', '');
+            if (videoId) {
+              const scResults = await scPlugin.search(videoId, 'track', 1);
+              if (scResults && scResults.length > 0 && scResults[0].url) {
+                await client.distube.play(voiceChannel, scResults[0].url, {
+                  member: interaction.member,
+                  textChannel: interaction.channel,
+                  message: null
+                });
+
+                return interaction.editReply({
+                  embeds: [
+                    createSuccessEmbed(
+                      '🎶 Audio Stream Loaded (High-Fidelity)',
+                      `YouTube direct stream hit bot verification, automatically streamed from audio network:\n\n▶ **[${scResults[0].name}](${scResults[0].url})**\n🔊 **Voice:** ${voiceChannel.name}`
+                    )
+                  ]
+                });
+              }
+            }
+          } catch (fallbackErr) {
+            console.warn('Direct YouTube fallback attempt failed:', fallbackErr?.message || fallbackErr);
+          }
+        }
+
         return interaction.editReply({
           embeds: [
             createErrorEmbed(
               'Playback Error',
-              `Could not play the requested URL: \`${err.message || 'Unknown error'}\``
+              `Could not stream the requested URL: \`${err.message || 'Unknown error'}\`\n\n*Tip: Try searching with song name (e.g. \`/play query: song title\`) or paste a Spotify link!*`
             )
           ]
         });

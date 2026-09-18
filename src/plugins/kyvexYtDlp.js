@@ -55,7 +55,7 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
     const flags = {
       dumpSingleJson: true,
       noWarnings: true,
-      extractorArgs: 'youtube:player_client=android,web',
+      extractorArgs: 'youtube:player_client=android,ios',
       preferFreeFormats: true,
       skipDownload: true,
       simulate: true,
@@ -64,18 +64,32 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
 
     if (fs.existsSync(this.cookiesPath)) {
       flags.cookies = this.cookiesPath;
+    } else if (process.env.YOUTUBE_COOKIE) {
+      try {
+        fs.writeFileSync(this.cookiesPath, process.env.YOUTUBE_COOKIE);
+        flags.cookies = this.cookiesPath;
+      } catch (e) {}
     }
 
     return flags;
   }
 
   async resolve(url, options) {
-    const flags = this.getFlags();
+    let flags = this.getFlags();
 
-    const info = await json(url, flags).catch((err) => {
-      const errMsg = err.stderr || err.message || `${err}`;
-      throw new DisTubeError('YTDLP_ERROR', errMsg);
-    });
+    let info;
+    try {
+      info = await json(url, flags);
+    } catch (err) {
+      // If android,ios encounters an issue, retry with web,ios fallback
+      try {
+        flags = this.getFlags({ extractorArgs: 'youtube:player_client=web,ios' });
+        info = await json(url, flags);
+      } catch (secondErr) {
+        const errMsg = secondErr.stderr || secondErr.message || err.stderr || err.message || `${err}`;
+        throw new DisTubeError('YTDLP_ERROR', errMsg);
+      }
+    }
 
     if (Array.isArray(info.entries)) {
       if (info.entries.length === 0) {
@@ -102,12 +116,20 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
       throw new DisTubeError('YTDLP_PLUGIN_INVALID_SONG', 'Cannot get stream url from invalid song.');
     }
 
-    const flags = this.getFlags({ format: 'ba/ba*' });
+    let flags = this.getFlags({ format: 'ba/ba*' });
 
-    const info = await json(song.url, flags).catch((err) => {
-      const errMsg = err.stderr || err.message || `${err}`;
-      throw new DisTubeError('YTDLP_ERROR', errMsg);
-    });
+    let info;
+    try {
+      info = await json(song.url, flags);
+    } catch (err) {
+      try {
+        flags = this.getFlags({ format: 'ba/ba*', extractorArgs: 'youtube:player_client=web,ios' });
+        info = await json(song.url, flags);
+      } catch (secondErr) {
+        const errMsg = secondErr.stderr || secondErr.message || err.stderr || err.message || `${err}`;
+        throw new DisTubeError('YTDLP_ERROR', errMsg);
+      }
+    }
 
     if (Array.isArray(info.entries)) {
       throw new DisTubeError('YTDLP_ERROR', 'Cannot get stream URL of an entire playlist');

@@ -15,25 +15,27 @@ Aapke computer ka internet aur processor band ho jata hai, jiski wajah se bot **
 
 ---
 
-## 🚀 Option 1: Discloud (Sabse Aasan & Recommended — 100% Free)
+## 🛑 Step 0: PC Ka Load Khatam Karein (Local Bot Ko Band Karein)
 
-**Discloud** khaaskar Discord bots ko host karne ke liye banaya gaya hai. Yeh sabse simple aur fast tareeqa hai.
+Aapke computer par bot background me chal raha tha aur Windows Startup me laga tha, jisse PC par CPU/RAM load pad raha tha.
+1. Apne folder me jakar **`stop-local-bot.bat`** par double-click karein.
+2. Yeh aapke PC se bot ka load poori tarah band kar dega aur Windows Startup shortcut ko delete kar dega.
+3. Ab aapka PC 100% free ho gaya!
+
+---
+
+## 🚀 Option 1: Discloud (1-Click Upload — Sabse Aasan, 100% Free & Recommended)
+
+**Discloud** Discord bots ke liye best free cloud hosting hai. Yeh 24/7 chalta hai bina aapke PC ki zaroorat ke!
+
+Humne aapke liye **`Kyvex-Publish-24-7.zip`** already latest fixed code ke saath generate kar di hai!
 
 ### Step-by-Step Guide:
-1. **[discloud.com](https://discloud.com)** website open karein aur apne **Discord Account** se login karein.
-2. Humne aapke project me already `discloud.config` file ready kar di hai!
-3. Apne computer me `DISCORD BOT` folder me jayein:
-   - `node_modules` folder ko **select mat karein** (yeh upload nahi karna).
-   - Baaki sabhi files aur folders ko select karein:
-     - `src` folder
-     - `package.json`
-     - `package-lock.json`
-     - `discloud.config`
-     - `.env`
-   - Right click ➔ **Compress to ZIP file** (jaise `bot.zip`).
-4. Discloud Dashboard me jayein aur **Add App / Upload** par click karein.
-5. Apna `bot.zip` upload karein aur **Start** par click karein.
-6. ✅ **Ho gaya!** Ab aapka bot 24/7 online rahega, chahe aap apna PC poori tarah band kar dein.
+1. **[discloud.com](https://discloud.com)** website open karein aur **Login with Discord** karein.
+2. Discloud Dashboard me **"Add App"** ya **"Upload"** button par click karein.
+3. Apne `DISCORD BOT` folder se **`Kyvex-Publish-24-7.zip`** file ko select karke upload kar dein (Aapko koi file compress karne ki zaroorat nahi hai, zip already ready hai).
+4. **Commit / Upload** par click karein aur bot **Start** ho jayega!
+5. ✅ **Mubarak ho!** Ab aapka bot 24 ghante online rahega chahe aapka PC band ho, sleep ho ya internet disconnect ho.
 
 ---
 
