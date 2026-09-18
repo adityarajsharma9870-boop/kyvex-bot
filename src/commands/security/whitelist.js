@@ -203,6 +203,10 @@ async function safeReply(interaction, payload) {
     if (error.code === 40060 || error.code === 'InteractionAlreadyReplied') {
       return await interaction.editReply(payload).catch(() => {});
     }
+    if (error.code === 10062 || error.rawError?.code === 10062) {
+      logger.warn('[safeReply] Interaction 10062: already handled or timed out by Discord Gateway.');
+      return null;
+    }
     throw error;
   }
 }

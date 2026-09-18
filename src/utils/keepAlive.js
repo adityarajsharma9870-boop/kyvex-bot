@@ -85,7 +85,7 @@ function startKeepAlive(client) {
     // Redirect to Discord OAuth2 Authorization URL
     if (pathname === '/api/auth/login' && req.method === 'GET') {
       const redirectUri = `${config.dashboardUrl}/api/auth/callback`;
-      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify`;
+      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds`;
       res.writeHead(302, { Location: discordAuthUrl });
       res.end();
       return;
@@ -142,9 +142,32 @@ function startKeepAlive(client) {
         }
 
         const discordUser = await userRes.json();
+
+        // Fetch real guilds of logged in user
+        let userGuilds = [];
+        try {
+          const guildsRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+            headers: { Authorization: `Bearer ${tokenData.access_token}` }
+          });
+          if (guildsRes.ok) {
+            const rawGuilds = await guildsRes.json();
+            // Filter strictly: User must be Server Owner OR have Administrator (0x8) OR Manage Server (0x20)
+            userGuilds = rawGuilds.filter((g) => {
+              const isOwner = g.owner === true;
+              const perms = BigInt(g.permissions || '0');
+              const isAdmin = (perms & 0x8n) === 0x8n;
+              const isManageGuild = (perms & 0x20n) === 0x20n;
+              return isOwner || isAdmin || isManageGuild;
+            });
+          }
+        } catch (gErr) {
+          logger.warn('[OAuth2] Failed to fetch user guilds:', gErr.message);
+        }
+
         const sessionToken = crypto.randomUUID();
         sessions.set(sessionToken, {
           id: sessionToken,
+          accessToken: tokenData.access_token,
           user: {
             id: discordUser.id,
             username: discordUser.username,
@@ -153,6 +176,7 @@ function startKeepAlive(client) {
               ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png`
               : 'https://cdn.discordapp.com/embed/avatars/0.png'
           },
+          userGuilds,
           createdAt: Date.now()
         });
 
@@ -364,7 +388,9 @@ function startKeepAlive(client) {
 
         // GET /api/guilds - Full server list for "Your Servers" grid view
         if (pathname === '/api/guilds' && req.method === 'GET') {
+          const session = getSession(req);
           const botGuildsMap = new Map();
+
           client.guilds.cache.forEach((g) => {
             botGuildsMap.set(g.id, {
               id: g.id,
@@ -373,47 +399,45 @@ function startKeepAlive(client) {
               memberCount: g.memberCount || 0,
               role: 'OWNER',
               hasBot: true,
+              ownerId: g.ownerId,
               channelsCount: g.channels.cache.size,
               rolesCount: g.roles.cache.size
             });
           });
 
-          // Pre-defined server library matching user communities
-          const communityList = [
-            { id: '1547315288293515424', name: 'Kyvex', role: 'OWNER', icon: 'https://cdn.discordapp.com/icons/1547315288293515424/043be6541ece44345a4c114977115d4a.webp' },
-            { id: '1545799252221894818', name: 'MUSIC BOT WORKING', role: 'OWNER', icon: null },
-            { id: 'ext-101', name: 'Infinite Stack', role: 'EXTRA OWNER', icon: null },
-            { id: 'ext-102', name: 'ORION CHEATS | ✔️', role: 'ADMIN', icon: null },
-            { id: 'ext-103', name: "aditya sharma's server", role: 'OWNER', icon: null },
-            { id: 'ext-104', name: 'Checking Community India!', role: 'ADMIN', icon: null },
-            { id: 'ext-105', name: 'Mobile rooting community', role: 'ADMIN', icon: null },
-            { id: 'ext-106', name: 'DG REGEDIT', role: 'ADMIN', icon: null },
-            { id: 'ext-107', name: 'ORION SWAPHELPER || SERVICE! 🌸', role: 'ADMIN', icon: null }
-          ];
+          let servers = [];
 
-          const servers = communityList.map((comm) => {
-            if (botGuildsMap.has(comm.id)) {
-              const bg = botGuildsMap.get(comm.id);
-              return { ...comm, ...bg, hasBot: true };
-            }
-            return {
-              id: comm.id,
-              name: comm.name,
-              icon: comm.icon,
-              memberCount: Math.floor(Math.random() * 40) + 5,
-              role: comm.role,
-              hasBot: false,
-              channelsCount: 8,
-              rolesCount: 5
-            };
-          });
+          if (session && Array.isArray(session.userGuilds) && session.userGuilds.length > 0) {
+            // User authenticated via Discord: strictly show ONLY servers where user is Owner / Admin / Manager
+            servers = session.userGuilds.map((g) => {
+              const isOwner = g.owner === true;
+              const perms = BigInt(g.permissions || '0');
+              const isAdmin = (perms & 0x8n) === 0x8n;
+              const isManage = (perms & 0x20n) === 0x20n;
+              const botGuild = botGuildsMap.get(g.id);
+              const hasBot = Boolean(botGuild);
 
-          // Also include any other live guilds bot is in that aren't in communityList
-          botGuildsMap.forEach((bg, id) => {
-            if (!servers.find(s => s.id === id)) {
-              servers.push(bg);
-            }
-          });
+              let role = 'ADMIN';
+              if (isOwner) role = 'OWNER';
+              else if (botGuild && securityManager.isExtraOwner(client.guilds.cache.get(g.id), session.user.id)) role = 'EXTRA OWNER';
+              else if (isAdmin) role = 'ADMIN';
+              else if (isManage) role = 'MANAGER';
+
+              return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
+                memberCount: botGuild ? botGuild.memberCount : 0,
+                role,
+                hasBot,
+                channelsCount: botGuild ? botGuild.channelsCount : 0,
+                rolesCount: botGuild ? botGuild.rolesCount : 0
+              };
+            });
+          } else {
+            // Fallback before OAuth login: show the REAL servers where the bot is currently added
+            servers = Array.from(botGuildsMap.values());
+          }
 
           const manageableCount = servers.length;
           const ownedCount = servers.filter(s => s.role === 'OWNER').length;
@@ -427,6 +451,68 @@ function startKeepAlive(client) {
               withBot: withBotCount
             },
             servers,
+            botId: client.user?.id || config.clientId || '1545804677436940339'
+          });
+        }
+
+        // POST /api/user-guilds - Sync user's real guilds from Discord OAuth token
+        if (pathname === '/api/user-guilds' && req.method === 'POST') {
+          const body = await parseBody(req);
+          const rawGuilds = Array.isArray(body.guilds) ? body.guilds : [];
+          const userId = body.userId;
+
+          // Filter strictly: User must be Server Owner OR have Administrator (0x8) OR Manage Server (0x20)
+          const manageable = rawGuilds.filter((g) => {
+            const isOwner = g.owner === true;
+            const perms = BigInt(g.permissions || '0');
+            const isAdmin = (perms & 0x8n) === 0x8n;
+            const isManage = (perms & 0x20n) === 0x20n;
+            return isOwner || isAdmin || isManage;
+          });
+
+          const session = getSession(req);
+          if (session) {
+            session.userGuilds = manageable;
+            if (userId && (!session.user || !session.user.id)) {
+              session.user = session.user || {};
+              session.user.id = userId;
+            }
+          }
+
+          const servers = manageable.map((g) => {
+            const isOwner = g.owner === true;
+            const perms = BigInt(g.permissions || '0');
+            const isAdmin = (perms & 0x8n) === 0x8n;
+            const isManage = (perms & 0x20n) === 0x20n;
+            const botGuild = client.guilds.cache.get(g.id);
+            const hasBot = Boolean(botGuild);
+
+            let role = 'ADMIN';
+            if (isOwner) role = 'OWNER';
+            else if (botGuild && userId && securityManager.isExtraOwner(botGuild, userId)) role = 'EXTRA OWNER';
+            else if (isAdmin) role = 'ADMIN';
+            else if (isManage) role = 'MANAGER';
+
+            return {
+              id: g.id,
+              name: g.name,
+              icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
+              memberCount: botGuild ? (botGuild.memberCount || 0) : 0,
+              role,
+              hasBot,
+              channelsCount: botGuild ? botGuild.channels.cache.size : 0,
+              rolesCount: botGuild ? botGuild.roles.cache.size : 0
+            };
+          });
+
+          return sendJson(res, 200, {
+            success: true,
+            servers,
+            stats: {
+              manageable: servers.length,
+              owned: servers.filter(s => s.role === 'OWNER').length,
+              withBot: servers.filter(s => s.hasBot).length
+            },
             botId: client.user?.id || config.clientId || '1545804677436940339'
           });
         }
@@ -1044,9 +1130,14 @@ function startKeepAlive(client) {
         if (pathname === '/api/tickets' && req.method === 'GET') {
           const ticketManager = require('./ticketManager');
           const data = ticketManager.getData();
+          const targetGuildId = parsedUrl.query.guildId;
+          const allPanels = data.panels || [];
+          const allTickets = Object.values(data.activeTickets || {});
+          const panels = targetGuildId ? allPanels.filter(p => !p.guildId || p.guildId === targetGuildId) : allPanels;
+          const activeTickets = targetGuildId ? allTickets.filter(t => !t.guildId || t.guildId === targetGuildId) : allTickets;
           return sendJson(res, 200, {
-            panels: data.panels || [],
-            activeTickets: Object.values(data.activeTickets || {})
+            panels,
+            activeTickets
           });
         }
 

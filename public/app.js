@@ -12,6 +12,33 @@ let currentInteractionMode = 'dropdowns';
 let customDropdowns = [];
 let allCachedGuilds = [];
 
+// Check for Discord OAuth2 Implicit Grant Access Token in URL Hash
+(function checkDiscordOAuthHash() {
+  try {
+    if (window.location.hash && window.location.hash.includes('access_token=')) {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      const token = params.get('access_token');
+      if (token) {
+        localStorage.setItem('discord_oauth_token', token);
+        localStorage.setItem('og_logged_in', 'true');
+        // Clean URL hash without triggering full page reload
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+    }
+  } catch (e) {
+    console.error('Error parsing Discord OAuth hash:', e);
+  }
+})();
+
+// Global Discord OAuth2 Authorization Redirect
+window.loginWithDiscordOAuth = function() {
+  const clientId = '1545804677436940339';
+  const redirectUri = window.location.origin + window.location.pathname;
+  const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds`;
+  window.location.href = oauthUrl;
+};
+
 // Panel Settings & Ticket Access Roles State
 let serverRoles = [];
 let serverCategories = [];
@@ -100,55 +127,118 @@ function switchView(viewId, customBreadcrumb = null) {
 }
 
 /**
- * Fetches the user's servers list from /api/guilds and updates stats & grid (Screenshot 4)
+ * Fetches the user's real servers list using Discord OAuth2 or bot cache.
+ * STRICT FILTER: Only servers where the user is Owner or has Administrator / Manage Server are shown.
+ * ZERO fake or mock servers.
  */
 async function fetchAllGuilds() {
-  const defaultServers = [
-    { id: '1547315288293515424', name: 'Kyvex', role: 'OWNER', icon: 'https://cdn.discordapp.com/icons/1547315288293515424/043be6541ece44345a4c114977115d4a.webp', hasBot: true, memberCount: 5 },
-    { id: '1545799252221894818', name: 'MUSIC BOT WORKING', role: 'OWNER', icon: null, hasBot: true, memberCount: 7 },
-    { id: 'ext-101', name: 'Infinite Stack', role: 'EXTRA OWNER', icon: null, hasBot: false, memberCount: 14 },
-    { id: 'ext-102', name: 'ORION CHEATS | ✔️', role: 'ADMIN', icon: null, hasBot: false, memberCount: 32 },
-    { id: 'ext-103', name: "aditya sharma's server", role: 'OWNER', icon: null, hasBot: false, memberCount: 3 },
-    { id: 'ext-104', name: 'Checking Community India!', role: 'ADMIN', icon: null, hasBot: false, memberCount: 19 },
-    { id: 'ext-105', name: 'Mobile rooting community', role: 'ADMIN', icon: null, hasBot: false, memberCount: 28 },
-    { id: 'ext-106', name: 'DG REGEDIT', role: 'ADMIN', icon: null, hasBot: false, memberCount: 12 },
-    { id: 'ext-107', name: 'ORION SWAPHELPER || SERVICE! 🌸', role: 'ADMIN', icon: null, hasBot: false, memberCount: 45 }
-  ];
+  const token = localStorage.getItem('discord_oauth_token');
+  let servers = [];
+  let userProfile = null;
 
-  try {
-    let res = await fetch('/api/guilds').catch(() => null);
-    if (!res || !res.ok) {
-      res = await fetch('https://kyvex-bot.onrender.com/api/guilds').catch(() => null);
-    }
-
-    if (res && res.ok) {
-      const data = await res.json();
-      if (data.success && data.servers) {
-        if (data.stats) {
-          const elManageable = document.getElementById('statManageableCount');
-          const elOwned = document.getElementById('statOwnedCount');
-          const elWithBot = document.getElementById('statWithBotCount');
-          if (elManageable) elManageable.textContent = data.stats.manageable;
-          if (elOwned) elOwned.textContent = data.stats.owned;
-          if (elWithBot) elWithBot.textContent = data.stats.withBot;
+  // 1. If user authorized via Discord OAuth2, fetch real Discord user & servers
+  if (token) {
+    try {
+      // Fetch user profile
+      const userRes = await fetch('https://discord.com/api/v10/users/@me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (userRes.ok) {
+        userProfile = await userRes.json();
+        const nameEl = document.getElementById('userDisplayName');
+        const avatarEl = document.getElementById('userAvatarImg');
+        const dName = userProfile.global_name || userProfile.username || 'Discord User';
+        if (nameEl) nameEl.textContent = dName;
+        if (avatarEl) {
+          avatarEl.src = userProfile.avatar 
+            ? `https://cdn.discordapp.com/avatars/${userProfile.id}/${userProfile.avatar}.png`
+            : 'https://cdn.discordapp.com/embed/avatars/0.png';
         }
-        allCachedGuilds = data.servers;
-        renderServerGrid(allCachedGuilds);
-        return;
+      } else if (userRes.status === 401) {
+        // Token expired
+        localStorage.removeItem('discord_oauth_token');
       }
+
+      // Fetch user's servers from Discord
+      if (userProfile) {
+        const guildsRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (guildsRes.ok) {
+          const rawGuilds = await guildsRes.json();
+          // Filter strictly: User MUST be Owner (owner === true) OR have Administrator (0x8) OR Manage Server (0x20)
+          const manageable = rawGuilds.filter((g) => {
+            const isOwner = g.owner === true;
+            const perms = BigInt(g.permissions || '0');
+            const isAdmin = (perms & 0x8n) === 0x8n;
+            const isManage = (perms & 0x20n) === 0x20n;
+            return isOwner || isAdmin || isManage;
+          });
+
+          // Sync with Kyvex backend to verify bot presence and extra-owner status
+          const syncRes = await fetch('/api/user-guilds', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guilds: manageable, userId: userProfile.id })
+          }).catch(() => null);
+
+          if (syncRes && syncRes.ok) {
+            const syncData = await syncRes.json();
+            if (syncData.servers) {
+              servers = syncData.servers;
+            }
+          } else {
+            // Fallback: render manageable servers directly
+            servers = manageable.map((g) => {
+              const isOwner = g.owner === true;
+              const perms = BigInt(g.permissions || '0');
+              const isAdmin = (perms & 0x8n) === 0x8n;
+              let role = 'ADMIN';
+              if (isOwner) role = 'OWNER';
+              else if (isAdmin) role = 'ADMIN';
+              else role = 'MANAGER';
+
+              return {
+                id: g.id,
+                name: g.name,
+                icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
+                role,
+                hasBot: false,
+                memberCount: 0
+              };
+            });
+          }
+        }
+      }
+    } catch (oauthErr) {
+      console.warn('OAuth guild sync note:', oauthErr);
     }
-  } catch (err) {
-    console.warn('Using local server cache:', err);
   }
 
-  // Graceful fallback to default servers list
-  allCachedGuilds = defaultServers;
+  // 2. If no OAuth token or OAuth returned no servers, fetch real servers the bot is currently in
+  if (!servers || servers.length === 0) {
+    try {
+      let res = await fetch('/api/guilds').catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.servers && data.servers.length > 0) {
+          servers = data.servers;
+        }
+      }
+    } catch (apiErr) {
+      console.warn('Local bot servers fetch note:', apiErr);
+    }
+  }
+
+  // 3. Update stats and server grid (NO fake mock servers!)
+  allCachedGuilds = servers || [];
   const elManageable = document.getElementById('statManageableCount');
   const elOwned = document.getElementById('statOwnedCount');
   const elWithBot = document.getElementById('statWithBotCount');
   if (elManageable) elManageable.textContent = allCachedGuilds.length;
   if (elOwned) elOwned.textContent = allCachedGuilds.filter(s => s.role === 'OWNER').length;
   if (elWithBot) elWithBot.textContent = allCachedGuilds.filter(s => s.hasBot).length;
+
   renderServerGrid(allCachedGuilds);
 }
 
@@ -161,10 +251,20 @@ function renderServerGrid(servers) {
 
   if (!servers || servers.length === 0) {
     container.innerHTML = `
-      <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: #95919e;">
-        <span style="font-size: 2rem; display: block; margin-bottom: 0.5rem;">🔍</span>
-        <span style="font-size: 1.1rem; font-weight: 700; color: #fff;">No Discord Servers Found</span>
-        <p style="font-size: 0.85rem; margin-top: 0.4rem;">Try searching for a different server name or invite Kyvex.</p>
+      <div style="grid-column: 1 / -1; padding: 3.5rem 1.5rem; text-align: center; color: #95919e;">
+        <span style="font-size: 2.5rem; display: block; margin-bottom: 0.6rem;">🛡️</span>
+        <span style="font-size: 1.2rem; font-weight: 700; color: #fff; display: block;">No Discord Servers Found</span>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #94a3b8; max-width: 520px; margin-left: auto; margin-right: auto;">
+          Authorize with Discord to view servers where you are the <strong>Server Owner</strong> or have <strong>Administrator</strong> permissions.
+        </p>
+        <div style="margin-top: 1.4rem;">
+          <button class="btn-discord-login-full" style="max-width: 270px; margin: 0 auto; display: inline-flex;" onclick="loginWithDiscordOAuth()" type="button">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
+              <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+            </svg>
+            <span>Login with Discord</span>
+          </button>
+        </div>
       </div>
     `;
     return;
@@ -174,7 +274,7 @@ function renderServerGrid(servers) {
 
   container.innerHTML = servers.map((s) => {
     const roleLower = (s.role || 'OWNER').toLowerCase();
-    const roleClass = roleLower.includes('extra') ? 'extra' : (roleLower.includes('admin') ? 'admin' : 'owner');
+    const roleClass = roleLower.includes('extra') ? 'extra' : (roleLower.includes('admin') ? 'admin' : (roleLower.includes('manager') ? 'admin' : 'owner'));
     const roleDisplay = s.role || 'OWNER';
     
     // Initials for avatar fallback
@@ -208,7 +308,7 @@ function renderServerGrid(servers) {
 
 /**
  * Configure button click handler on server card:
- * Switches active context to this guild and opens panels editor
+ * Switches active context strictly to this guild and isolates all settings & panels to it
  */
 window.selectAndConfigureGuild = function(guildId, encodedName) {
   const guildName = decodeURIComponent(encodedName);
@@ -226,12 +326,15 @@ window.selectAndConfigureGuild = function(guildId, encodedName) {
   const serverSelect = document.getElementById('serverSelect');
   if (serverSelect) serverSelect.value = guildId;
 
-  // Load modules for this server
+  // Load modules strictly isolated for this specific server
   fetchGuildStructure(guildId);
   fetchConfig(guildId);
-  fetchTickets();
+  fetchTickets(guildId);
   if (typeof fetchWelcomeSettings === 'function') {
     fetchWelcomeSettings(guildId);
+  }
+  if (typeof window.fetchWhitelistData === 'function') {
+    window.fetchWhitelistData();
   }
 
   // Switch to Panels view
@@ -358,13 +461,23 @@ async function fetchStatus() {
           serverSelect.appendChild(opt);
         });
 
+        if (!serverSelect.dataset.changeBound) {
+          serverSelect.dataset.changeBound = 'true';
+          serverSelect.addEventListener('change', (e) => {
+            const targetId = e.target.value;
+            const targetGuild = (data.guilds || []).find(g => g.id === targetId) || allCachedGuilds.find(g => g.id === targetId);
+            const targetName = targetGuild?.name || 'Discord Server';
+            selectAndConfigureGuild(targetId, encodeURIComponent(targetName));
+          });
+        }
+
         if (!currentGuildId) {
           currentGuildId = data.guilds[0].id;
           serverSelect.value = currentGuildId;
           updateSidebarServerCard(data.guilds[0]);
           fetchGuildStructure(currentGuildId);
           fetchConfig(currentGuildId);
-          fetchTickets();
+          fetchTickets(currentGuildId);
           if (typeof fetchWelcomeSettings === 'function') {
             fetchWelcomeSettings(currentGuildId);
           }
@@ -771,9 +884,11 @@ async function fetchConfig(guildId) {
 // 3. TICKET PANELS MANAGEMENT & LIFECYCLE
 // ==========================================
 
-async function fetchTickets() {
+async function fetchTickets(guildId = null) {
+  const gId = guildId || currentGuildId;
   try {
-    const res = await fetch('/api/tickets');
+    const url = gId ? `/api/tickets?guildId=${gId}` : '/api/tickets';
+    const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -3535,11 +3650,8 @@ function setupLandingPage() {
 
   // Discord Login Button inside Modal
   document.getElementById('btnZynraxDiscordLogin')?.addEventListener('click', () => {
-    localStorage.setItem('og_logged_in', 'true');
     closeZynraxLogin();
-    showDashboard();
-    switchView('servers', 'Your Servers');
-    showToast('Welcome to Kyvex Dashboard!', 'success');
+    loginWithDiscordOAuth();
   });
 
   // Back to Servers Button (in topbar next to breadcrumb)
@@ -3605,6 +3717,7 @@ function setupLandingPage() {
   });
 
   document.getElementById('btnTopbarLogout')?.addEventListener('click', () => {
+    localStorage.removeItem('discord_oauth_token');
     localStorage.setItem('og_logged_in', 'false');
     showLanding();
     showToast('Logged out successfully', 'info');
@@ -3683,7 +3796,7 @@ function initAntiNukeEvents() {
         const res = await fetch('/api/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'antiNuke', value: isEnabled })
+          body: JSON.stringify({ guildId: currentGuildId, key: 'antiNuke', value: isEnabled })
         });
         if (res.ok) {
           showToast(isEnabled ? '🛡️ Anti-Nuke Defense Armed & Active!' : '⚠️ Anti-Nuke Defense Disabled', isEnabled ? 'success' : 'warn');
@@ -4610,7 +4723,7 @@ function initAutoModEvents() {
         const res = await fetch('/api/toggle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ key: 'autoMod', value: isEnabled })
+          body: JSON.stringify({ guildId: currentGuildId, key: 'autoMod', value: isEnabled })
         });
         if (res.ok) {
           showToast(isEnabled ? '🛡️ AutoMod Defense Armed & Active!' : '⚠️ AutoMod Defense Disabled', isEnabled ? 'success' : 'warn');

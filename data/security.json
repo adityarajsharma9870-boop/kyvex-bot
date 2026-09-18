@@ -1,6 +1,6 @@
 {
   "1545799252221894818": {
-    "antiNuke": true,
+    "antiNuke": false,
     "antiAdminLockdown": true,
     "antiBotInvite": true,
     "antiChannel": true,
@@ -219,11 +219,15 @@
     "extraOwners": [],
     "adminWhitelist": [
       "1466812544130875578",
-      "1406667252119375882"
+      "1406667252119375882",
+      "1534305684240339174",
+      "1505841967245037578"
     ],
     "whitelist": [
       "1466812544130875578",
-      "1406667252119375882"
+      "1406667252119375882",
+      "1534305684240339174",
+      "1505841967245037578"
     ],
     "whitelistDetails": {
       "1466812544130875578": {
@@ -287,6 +291,68 @@
           "antiWebhookUpdate": true
         },
         "updatedAt": "2026-09-18T19:10:20.308Z"
+      },
+      "1534305684240339174": {
+        "id": "1534305684240339174",
+        "username": "adityasharma_1845",
+        "displayName": "ADITYA SHARMA",
+        "avatar": "https://cdn.discordapp.com/avatars/1534305684240339174/fb471a4a27c4e086d0de7798424de032.webp",
+        "permissions": {
+          "antiBan": true,
+          "antiUnban": true,
+          "antiKick": true,
+          "antiPrune": true,
+          "antiBotAdd": true,
+          "antiChannelCreate": true,
+          "antiChannelDelete": true,
+          "antiChannelUpdate": true,
+          "antiRoleCreate": true,
+          "antiRoleDelete": true,
+          "antiRoleUpdate": true,
+          "antiMemberUpdate": true,
+          "antiEmojiCreate": true,
+          "antiEmojiDelete": true,
+          "antiEmojiUpdate": true,
+          "antiEveryonePing": true,
+          "antiRolePing": true,
+          "antiIntegration": true,
+          "antiGuildUpdate": true,
+          "antiWebhookCreate": true,
+          "antiWebhookDelete": true,
+          "antiWebhookUpdate": true
+        },
+        "updatedAt": "2026-09-18T19:16:00.405Z"
+      },
+      "1505841967245037578": {
+        "id": "1505841967245037578",
+        "username": "joee__69",
+        "displayName": "Joe",
+        "avatar": "https://cdn.discordapp.com/avatars/1505841967245037578/793cb160372435100a08fb4210d6c0e3.webp",
+        "permissions": {
+          "antiBan": true,
+          "antiUnban": true,
+          "antiKick": true,
+          "antiPrune": true,
+          "antiBotAdd": true,
+          "antiChannelCreate": true,
+          "antiChannelDelete": true,
+          "antiChannelUpdate": true,
+          "antiRoleCreate": true,
+          "antiRoleDelete": true,
+          "antiRoleUpdate": true,
+          "antiMemberUpdate": true,
+          "antiEmojiCreate": true,
+          "antiEmojiDelete": true,
+          "antiEmojiUpdate": true,
+          "antiEveryonePing": true,
+          "antiRolePing": true,
+          "antiIntegration": true,
+          "antiGuildUpdate": true,
+          "antiWebhookCreate": true,
+          "antiWebhookDelete": true,
+          "antiWebhookUpdate": true
+        },
+        "updatedAt": "2026-09-18T19:19:43.277Z"
       }
     },
     "logChannel": "1550064822023102615",
