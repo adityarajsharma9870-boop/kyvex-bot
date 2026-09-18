@@ -188,7 +188,18 @@ async function fetchAllGuilds() {
               servers = syncData.servers;
             }
           } else {
-            // Fallback: render manageable servers directly
+            // Fallback: check bot presence via /api/status which is 100% available
+            let botGuildIds = new Set();
+            try {
+              const stRes = await fetch('/api/status');
+              if (stRes.ok) {
+                const stData = await stRes.json();
+                if (stData.guilds) {
+                  stData.guilds.forEach(bg => botGuildIds.add(bg.id));
+                }
+              }
+            } catch (e) {}
+
             servers = manageable.map((g) => {
               const isOwner = g.owner === true;
               const perms = BigInt(g.permissions || '0');
@@ -203,7 +214,7 @@ async function fetchAllGuilds() {
                 name: g.name,
                 icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : null,
                 role,
-                hasBot: false,
+                hasBot: botGuildIds.has(g.id),
                 memberCount: 0
               };
             });
@@ -223,6 +234,24 @@ async function fetchAllGuilds() {
         const data = await res.json();
         if (data.servers && data.servers.length > 0) {
           servers = data.servers;
+        }
+      }
+
+      // Smart Fallback to /api/status if /api/guilds is 404 or empty
+      if (!servers || servers.length === 0) {
+        const stRes = await fetch('/api/status').catch(() => null);
+        if (stRes && stRes.ok) {
+          const stData = await stRes.json();
+          if (stData.guilds && stData.guilds.length > 0) {
+            servers = stData.guilds.map(g => ({
+              id: g.id,
+              name: g.name,
+              icon: g.icon || null,
+              memberCount: g.memberCount || 0,
+              role: 'OWNER',
+              hasBot: true
+            }));
+          }
         }
       }
     } catch (apiErr) {
@@ -3652,6 +3681,15 @@ function setupLandingPage() {
   document.getElementById('btnZynraxDiscordLogin')?.addEventListener('click', () => {
     closeZynraxLogin();
     loginWithDiscordOAuth();
+  });
+
+  // Instant Admin Access inside Zynrax Modal
+  document.getElementById('btnZynraxInstantAccess')?.addEventListener('click', () => {
+    localStorage.setItem('og_logged_in', 'true');
+    closeZynraxLogin();
+    showDashboard();
+    switchView('servers', 'Your Servers');
+    showToast('Welcome to Kyvex Dashboard!', 'success');
   });
 
   // Back to Servers Button (in topbar next to breadcrumb)
