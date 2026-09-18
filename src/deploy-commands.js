@@ -41,24 +41,26 @@ const rest = new REST().setToken(token);
   try {
     console.log(`\n${chalk.hex('#F1C40F')('Started refreshing')} ${chalk.bold(commands.length)} ${chalk.hex('#F1C40F')('application (/) commands globally...')}`);
 
-    // If a guildId was configured previously, clear its guild commands so there are no duplicate entries
-    if (guildId) {
-      try {
-        console.log(chalk.cyan(`Clearing old guild-specific commands from Guild (${guildId}) to prevent duplicates...`));
-        await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: [] });
-      } catch (clearErr) {
-        console.warn(chalk.yellow(`[WARN] Could not clear guild commands for ${guildId}: ${clearErr.message}`));
+    // 1. Sync directly to all guilds the bot is currently in (0-second instant refresh in Discord!)
+    try {
+      const guilds = await rest.get(Routes.userGuilds());
+      console.log(chalk.cyan(`\n⚡ Instantly syncing commands to all ${guilds.length} server(s)...`));
+      for (const g of guilds) {
+        await rest.put(Routes.applicationGuildCommands(clientId, g.id), { body: commands });
+        console.log(`${chalk.green('✔')} Instantly refreshed [${chalk.bold(g.name)}]`);
       }
+    } catch (gErr) {
+      console.warn(chalk.yellow(`[WARN] Guild sync notice: ${gErr.message}`));
     }
 
-    // Deploy globally so all servers (present and future) receive all slash commands!
-    console.log(chalk.cyan('Deploying application commands GLOBALLY to all servers...'));
+    // 2. Deploy globally so all servers receive all slash commands!
+    console.log(chalk.cyan('\nDeploying application commands GLOBALLY to Discord...'));
     const data = await rest.put(
       Routes.applicationCommands(clientId),
       { body: commands }
     );
 
-    console.log(chalk.green(`\n✔ Successfully registered ${chalk.bold(data.length)} slash commands globally across ALL servers!\n`));
+    console.log(chalk.green(`\n✔ Successfully registered ${chalk.bold(data.length)} slash commands across ALL servers!\n`));
   } catch (error) {
     console.error(chalk.red('[ERROR] Failed to register slash commands:'), error);
   }
