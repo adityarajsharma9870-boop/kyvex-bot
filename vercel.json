@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "kyvex-dashboard",
+  "outputDirectory": "public",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
