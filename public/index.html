@@ -926,7 +926,10 @@
               <div class="profile-status-dot"></div>
             </div>
             <div class="profile-info">
-              <h2 class="profile-name" id="dashProfileName">Master Admin</h2>
+              <div class="profile-welcome-line" style="font-size: 0.85rem; color: #a1a1aa; font-family: 'Outfit', sans-serif; margin-bottom: 3px;">
+                Welcome back, <strong id="welcomeUserName" style="color: #fff; font-weight: 700;">Master Admin</strong>
+              </div>
+              <h2 class="profile-name" id="dashProfileName" style="margin-top: 0;">Master Admin</h2>
               <div class="profile-stats">
                 <span class="profile-stat-badge">Manageable: <span class="profile-stat-val" id="statManageableCount">0</span></span>
                 <span class="profile-stat-badge">Owned: <span class="profile-stat-val" id="statOwnedCount">0</span></span>
@@ -935,8 +938,12 @@
             </div>
           </div>
           <div class="profile-actions">
+            <button class="btn btn-outline-sm" id="dashProfileRefresh" onclick="fetchAllGuilds()" type="button" style="padding: 10px 16px; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px;" title="Re-fetch guild list">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              <span>Refresh</span>
+            </button>
             <a href="javascript:void(0)" class="zynrax-btn-premium" id="dashProfilePremium" style="padding: 10px 18px; text-decoration: none;">
-              <span>💎 PREMIUM</span>
+              <span>💎 Get Premium</span>
             </a>
             <button class="btn btn-outline-sm" id="dashProfileLogout" onclick="logoutUser()" type="button" style="padding: 10px 18px; border-radius: 12px;">
               <span>🚪 Logout</span>

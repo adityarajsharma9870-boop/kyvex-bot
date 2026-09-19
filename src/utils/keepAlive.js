@@ -82,27 +82,35 @@ function startKeepAlive(client) {
     // 1. DISCORD AUTHENTICATION ROUTES
     // ==========================================
 
-    // Redirect to Discord OAuth2 Authorization URL
-    if (pathname === '/api/auth/login' && req.method === 'GET') {
+    // Redirect to Discord OAuth2 Authorization URL (Scopes: identify guilds guilds.join)
+    if ((pathname === '/api/auth/login' || pathname === '/login') && req.method === 'GET') {
       const redirectUri = `${config.dashboardUrl}/api/auth/callback`;
-      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds`;
+      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds%20guilds.join`;
       res.writeHead(302, { Location: discordAuthUrl });
       res.end();
       return;
     }
 
-    // Discord OAuth2 Callback handler
+    // Direct /dashboard route serving index.html
+    if (pathname === '/dashboard') {
+      const indexPath = path.join(publicDir, 'index.html');
+      const stream = fs.createReadStream(indexPath);
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return stream.pipe(res);
+    }
+
+    // Discord OAuth2 Callback handler (Server-Side Code Exchange & Token Storage)
     if (pathname === '/api/auth/callback' && req.method === 'GET') {
       const code = parsedUrl.query.code;
       if (!code) {
-        res.writeHead(302, { Location: '/?error=missing_code' });
+        res.writeHead(302, { Location: '/dashboard?error=missing_code' });
         res.end();
         return;
       }
 
       if (!config.clientSecret) {
         // If CLIENT_SECRET is not configured, redirect with informative notice
-        res.writeHead(302, { Location: '/?error=missing_secret' });
+        res.writeHead(302, { Location: '/dashboard?error=missing_secret' });
         res.end();
         return;
       }
@@ -125,7 +133,7 @@ function startKeepAlive(client) {
 
         if (!tokenRes.ok) {
           logger.error('[OAuth2 Error] Token exchange failed:', await tokenRes.text());
-          res.writeHead(302, { Location: '/?error=token_failed' });
+          res.writeHead(302, { Location: '/dashboard?error=token_failed' });
           res.end();
           return;
         }
@@ -136,14 +144,14 @@ function startKeepAlive(client) {
         });
 
         if (!userRes.ok) {
-          res.writeHead(302, { Location: '/?error=user_fetch_failed' });
+          res.writeHead(302, { Location: '/dashboard?error=user_fetch_failed' });
           res.end();
           return;
         }
 
         const discordUser = await userRes.json();
 
-        // Fetch real guilds of logged in user
+        // Fetch real guilds of logged in user using server-side access token
         let userGuilds = [];
         try {
           const guildsRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
@@ -163,6 +171,7 @@ function startKeepAlive(client) {
           logger.warn('[OAuth2] Failed to fetch user guilds:', gErr.message);
         }
 
+        // Store access_token securely server-side in sessions Map - NEVER in the browser
         const sessionToken = crypto.randomUUID();
         sessions.set(sessionToken, {
           id: sessionToken,
@@ -179,15 +188,16 @@ function startKeepAlive(client) {
           createdAt: Date.now()
         });
 
+        // Set HttpOnly session cookie and redirect directly to /dashboard
         res.writeHead(302, {
           'Set-Cookie': `og_session=${sessionToken}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`,
-          Location: '/'
+          Location: '/dashboard'
         });
         res.end();
         return;
       } catch (oauthErr) {
         logger.error('[OAuth2 Error]:', oauthErr);
-        res.writeHead(302, { Location: '/?error=oauth_exception' });
+        res.writeHead(302, { Location: '/dashboard?error=oauth_exception' });
         res.end();
         return;
       }
@@ -406,21 +416,39 @@ function startKeepAlive(client) {
 
           let servers = [];
 
+          // If session has accessToken stored securely server-side, re-fetch fresh guilds from Discord API
+          if (session && session.accessToken) {
+            try {
+              const guildsRes = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+                headers: { Authorization: `Bearer ${session.accessToken}` }
+              });
+              if (guildsRes.ok) {
+                const freshGuilds = await guildsRes.json();
+                session.userGuilds = freshGuilds.filter((g) => {
+                  const isOwner = g.owner === true;
+                  const perms = BigInt(g.permissions || '0');
+                  const isAdmin = (perms & 0x8n) === 0x8n;
+                  return isOwner || isAdmin;
+                });
+              }
+            } catch (gErr) {
+              logger.warn('[OAuth2] Failed to refresh user guilds:', gErr.message);
+            }
+          }
+
           if (session && Array.isArray(session.userGuilds) && session.userGuilds.length > 0) {
-            // User authenticated via Discord: strictly show ONLY servers where user is Owner / Admin / Manager
-            servers = session.userGuilds.map((g) => {
+            // Strictly show ONLY servers where user is Owner (owner: true) or has Administrator (permissions bitfield 0x8)
+            servers = session.userGuilds.filter((g) => {
               const isOwner = g.owner === true;
               const perms = BigInt(g.permissions || '0');
               const isAdmin = (perms & 0x8n) === 0x8n;
-              const isManage = (perms & 0x20n) === 0x20n;
+              return isOwner || isAdmin;
+            }).map((g) => {
+              const isOwner = g.owner === true;
               const botGuild = botGuildsMap.get(g.id);
               const hasBot = Boolean(botGuild);
-
-              let role = 'ADMIN';
-              if (isOwner) role = 'OWNER';
-              else if (botGuild && securityManager.isExtraOwner(client.guilds.cache.get(g.id), session.user.id)) role = 'EXTRA OWNER';
-              else if (isAdmin) role = 'ADMIN';
-              else if (isManage) role = 'MANAGER';
+              // Badge: OWNER if owner: true, otherwise ADMIN
+              const role = isOwner ? 'OWNER' : 'ADMIN';
 
               return {
                 id: g.id,
@@ -434,8 +462,11 @@ function startKeepAlive(client) {
               };
             });
           } else {
-            // Fallback before OAuth login: show the REAL servers where the bot is currently added
-            servers = Array.from(botGuildsMap.values());
+            // Fallback: show servers where bot is present with OWNER status
+            servers = Array.from(botGuildsMap.values()).map(bg => ({
+              ...bg,
+              role: 'OWNER'
+            }));
           }
 
           const manageableCount = servers.length;
