@@ -58,6 +58,16 @@
   <div class="bg-glow-orb orb-3"></div>
   <div class="bg-glow-orb orb-4"></div>
 
+  <!-- Zynrax Cyber Authentication Callback Screen -->
+  <div id="callbackLoadingScreen" class="callback-loading" style="display: none;">
+    <div class="logo-animation-wrapper" style="margin-bottom: 2rem;">
+      <div class="security-logo-ring"></div>
+      <div class="security-logo-ring-2"></div>
+      <img src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Kyvex" class="login-logo">
+    </div>
+    <div class="callback-pulse-text" id="callbackPulseText">AUTHENTICATING WITH SECURE SERVER...</div>
+  </div>
+
   <!-- ============================================================ -->
   <!-- ZYNRAX FLOATING PREMIUM TOPBAR (MATCHES SCREENSHOT 1 & 4)    -->
   <!-- ============================================================ -->
@@ -584,48 +594,53 @@
   </div>
 
   <!-- ============================================================ -->
-  <!-- ZYNRAX DISCORD LOGIN MODAL (SCREENSHOT 2 & LIVE FLOW)       -->
+  <!-- ZYNRAX DISCORD LOGIN MODAL (1:1 ACCURATE TO LIVE ZYNRAX)    -->
   <!-- ============================================================ -->
   <div class="zynrax-modal-overlay" id="zynraxLoginModal" style="display: none;">
-    <div class="zynrax-login-card">
+    <div class="login-card glass" style="position: relative;">
       <button class="btn-close-modal-round" id="btnCloseZynraxLogin" type="button" aria-label="Close">✕</button>
+      <div class="login-glow"></div>
 
-      <div class="zynrax-glow-avatar-wrapper">
-        <div class="zynrax-avatar-outer-ring">
-          <img id="modalBotAvatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Kyvex Avatar">
+      <div class="login-header">
+        <div class="logo-animation-wrapper">
+          <div class="security-logo-ring"></div>
+          <div class="security-logo-ring-2"></div>
+          <img id="modalBotAvatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="Kyvex Avatar" class="login-logo">
         </div>
+        <h1 class="premium-title" data-i18n="loginTitle">Welcome to Kyvex</h1>
+        <p class="login-subtitle" data-i18n="loginDesc">Login to access your dashboard and manage your servers with premium tools.</p>
       </div>
 
-      <h2 class="zynrax-login-title" data-i18n="loginTitle">Welcome to Kyvex</h2>
-      <p class="zynrax-login-desc" data-i18n="loginDesc">Login to access your dashboard and manage your servers with military-grade security tools.</p>
+      <div class="login-actions">
+        <!-- 1:1 Zynrax Red Discord OAuth Button -->
+        <button class="discord-btn" id="btnZynraxDiscordLogin" type="button">
+          <span class="btn-shine"></span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+          </svg>
+          <span data-i18n="loginWithDiscord">Login with Discord</span>
+        </button>
 
-      <!-- Big Red Discord OAuth Login Button -->
-      <button class="btn-discord-login-full" id="btnZynraxDiscordLogin" type="button">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
-        </svg>
-        <span data-i18n="loginWithDiscord">Login with Discord</span>
-      </button>
+        <!-- Divider -->
+        <div class="zynrax-login-divider">
+          <span data-i18n="orTestInstantly">OR INSTANT ACCESS</span>
+        </div>
 
-      <!-- Divider -->
-      <div class="zynrax-login-divider">
-        <span data-i18n="orTestInstantly">OR INSTANT ACCESS</span>
-      </div>
+        <!-- Direct Discord User ID Entry -->
+        <div class="login-id-box" style="max-width: 320px; margin: 0 auto 0.7rem;">
+          <input type="text" id="inputDirectDiscordId" placeholder="Enter Discord User ID..." class="input-login-id" maxlength="22" autocomplete="off">
+          <button type="button" id="btnSubmitDirectId" class="btn-login-id" title="Login with ID">
+            <span>GO →</span>
+          </button>
+        </div>
 
-      <!-- Direct Discord User ID Entry -->
-      <div class="login-id-box">
-        <input type="text" id="inputDirectDiscordId" placeholder="Enter Discord User ID..." class="input-login-id" maxlength="22" autocomplete="off">
-        <button type="button" id="btnSubmitDirectId" class="btn-login-id" title="Login with ID">
-          <span>GO →</span>
+        <!-- Instant Admin Access Button (Demo & Full Control) -->
+        <button class="btn-instant-admin-access" id="btnZynraxInstantAccess" type="button" style="max-width: 320px; margin: 0 auto;">
+          <span>⚡ <span data-i18n="instantDemoAccess">Instant Admin Access (Demo Mode)</span></span>
         </button>
       </div>
 
-      <!-- Instant Admin Access Button (Demo & Full Control) -->
-      <button class="btn-instant-admin-access" id="btnZynraxInstantAccess" type="button">
-        <span>⚡ <span data-i18n="instantDemoAccess">Instant Admin Access (Demo Mode)</span></span>
-      </button>
-
-      <div class="zynrax-login-terms">
+      <div class="login-footer-text">
         <span data-i18n="termsNotice">By continuing, you agree to our Terms of Service and Privacy Policy.</span>
       </div>
     </div>
@@ -903,46 +918,58 @@
           </div>
         </div>
 
-        <!-- Top Stats Row -->
-        <div class="zynrax-stats-bar">
-          <div class="zstat-pill"><span data-i18n="statManageable">MANAGEABLE</span>: <strong id="statManageableCount">9</strong></div>
-          <span class="zstat-sep">|</span>
-          <div class="zstat-pill"><span data-i18n="statOwned">OWNED</span>: <strong id="statOwnedCount">3</strong></div>
-          <span class="zstat-sep">|</span>
-          <div class="zstat-pill"><span data-i18n="statWithBot">WITH BOT</span>: <strong id="statWithBotCount">2</strong></div>
-        </div>
-
-        <div class="page-header-row" style="margin-top: 0.5rem;">
-          <div>
-            <h1 class="zynrax-gradient-title" data-i18n="yourServers">Your Servers</h1>
-            <p class="page-subtitle" data-i18n="yourServersSubtitle">Select a server to configure or invite Kyvex to unlock security, panels, and music.</p>
+        <!-- Zynrax 1:1 Authenticated Profile Banner -->
+        <div class="dash-profile-card">
+          <div class="profile-left">
+            <div class="profile-avatar-wrap">
+              <img id="dashProfileAvatar" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="User Avatar" class="profile-avatar">
+              <div class="profile-status-dot"></div>
+            </div>
+            <div class="profile-info">
+              <h2 class="profile-name" id="dashProfileName">Master Admin</h2>
+              <div class="profile-stats">
+                <span class="profile-stat-badge">Manageable: <span class="profile-stat-val" id="statManageableCount">0</span></span>
+                <span class="profile-stat-badge">Owned: <span class="profile-stat-val" id="statOwnedCount">0</span></span>
+                <span class="profile-stat-badge">With Bot: <span class="profile-stat-val" id="statWithBotCount">0</span></span>
+              </div>
+            </div>
           </div>
-        </div>
-
-        <!-- Filter & Search Bar -->
-        <div class="panels-controls-bar" style="margin-top: 1rem;">
-          <div class="search-input-box" style="max-width: 380px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" id="serverSearchInput" placeholder="Search servers..." class="styled-input-search">
-          </div>
-          <div class="panels-actions-right">
-            <button class="btn btn-outline-sm" id="btnRefreshServerGrid" type="button">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              <span>Refresh</span>
-            </button>
-            <a href="https://discord.com/oauth2/authorize?client_id=1545804677436940339&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn btn-gold-sm" id="btnAddNewServer">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>+ Add Bot to Server</span>
+          <div class="profile-actions">
+            <a href="javascript:void(0)" class="zynrax-btn-premium" id="dashProfilePremium" style="padding: 10px 18px; text-decoration: none;">
+              <span>💎 PREMIUM</span>
             </a>
+            <button class="btn btn-outline-sm" id="dashProfileLogout" onclick="logoutUser()" type="button" style="padding: 10px 18px; border-radius: 12px;">
+              <span>🚪 Logout</span>
+            </button>
           </div>
         </div>
 
-        <!-- Dynamic Server Cards Grid -->
-        <div class="zynrax-server-grid" id="zynraxServerGrid">
-          <!-- Server cards populated dynamically via app.js -->
-          <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: #95919e;">
-            <div style="width: 28px; height: 28px; border: 2px solid #ff2a4b; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
-            <span>Loading your Discord servers...</span>
+        <!-- Zynrax 1:1 Servers Section -->
+        <div class="dash-servers-section">
+          <div class="servers-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+            <h3 class="servers-title" style="font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0;">SELECT A SERVER</h3>
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <div class="search-input-box" style="width: 260px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="serverSearchInput" placeholder="Search servers..." class="styled-input-search">
+              </div>
+              <button class="btn btn-outline-sm" id="btnRefreshServerGrid" onclick="fetchAllGuilds()" type="button" style="padding: 9px 16px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                <span>Refresh</span>
+              </button>
+              <a href="https://discord.com/oauth2/authorize?client_id=1545804677436940339&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn btn-gold-sm" id="btnAddNewServer" style="padding: 9px 16px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>+ Add Bot</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Dynamic Server Cards Grid (4-Column Layout) -->
+          <div class="servers-grid" id="zynraxServerGrid">
+            <div style="grid-column: 1 / -1; padding: 3rem; text-align: center; color: #95919e;">
+              <div style="width: 28px; height: 28px; border: 2px solid #ff2a4b; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
+              <span>Loading your Discord servers...</span>
+            </div>
           </div>
         </div>
       </section>

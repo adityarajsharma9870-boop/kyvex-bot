@@ -24,6 +24,27 @@ let allCachedGuilds = [];
         localStorage.setItem('og_logged_in', 'true');
         // Clean URL hash without triggering full page reload
         history.replaceState(null, '', window.location.pathname + window.location.search);
+
+        // Show authentic Zynrax cyber authentication callback animation
+        const screen = document.getElementById('callbackLoadingScreen');
+        const text = document.getElementById('callbackPulseText');
+        if (screen) screen.style.display = 'flex';
+        if (text) text.textContent = 'AUTHENTICATING WITH SECURE SERVER...';
+
+        setTimeout(() => {
+          if (text) text.textContent = 'SYNCHRONIZING PROFILE...';
+        }, 500);
+
+        setTimeout(() => {
+          if (text) text.textContent = 'REDIRECTING...';
+        }, 1100);
+
+        setTimeout(() => {
+          if (screen) screen.style.display = 'none';
+          if (typeof showDashboard === 'function') showDashboard();
+          if (typeof switchView === 'function') switchView('servers', t('yourServers'));
+          if (typeof fetchAllGuilds === 'function') fetchAllGuilds();
+        }, 1600);
       }
     }
   } catch (e) {
@@ -477,6 +498,17 @@ function updateTopbarAuthState(userOverride = null) {
         avatarImg.src = 'https://cdn.discordapp.com/embed/avatars/1.png';
       };
     }
+
+    // Sync to Zynrax Dashboard Profile Card
+    const dashAvatar = document.getElementById('dashProfileAvatar');
+    const dashName = document.getElementById('dashProfileName');
+    if (dashAvatar) {
+      dashAvatar.src = user.avatar || 'https://cdn.discordapp.com/embed/avatars/1.png';
+      dashAvatar.onerror = () => {
+        dashAvatar.src = 'https://cdn.discordapp.com/embed/avatars/1.png';
+      };
+    }
+    if (dashName) dashName.textContent = displayName;
   } else {
     if (btnLogin) btnLogin.style.display = 'flex';
     if (userPill) userPill.style.display = 'none';
@@ -820,7 +852,7 @@ function renderServerGrid(servers) {
             Servers where you are a regular member are hidden for security.
           </p>
           <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-            <a href="https://discord.com/oauth2/authorize?client_id=1545804677436940339&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn-card-configure" style="max-width: 260px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+            <a href="https://discord.com/oauth2/authorize?client_id=1545804677436940339&permissions=8&scope=bot%20applications.commands" target="_blank" class="server-action-btn configure" style="max-width: 260px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
               <span>+ Add Kyvex to Server</span>
             </a>
             <button class="btn btn-outline-sm" onclick="fetchAllGuilds()" type="button" style="padding: 10px 18px;">
@@ -840,7 +872,7 @@ function renderServerGrid(servers) {
           ${t('authorizeToView')}
         </p>
         <div style="margin-top: 1.4rem;">
-          <button class="btn-discord-login-full" style="max-width: 270px; margin: 0 auto; display: inline-flex;" onclick="loginWithDiscordOAuth()" type="button">
+          <button class="discord-btn" style="max-width: 270px; margin: 0 auto; display: inline-flex; justify-content: center;" onclick="loginWithDiscordOAuth()" type="button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
               <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
             </svg>
@@ -858,39 +890,44 @@ function renderServerGrid(servers) {
     const roleUpper = (s.role || 'OWNER').toUpperCase();
     const isOwner = roleUpper === 'OWNER';
     const isExtra = roleUpper.includes('EXTRA');
-    const roleClass = isOwner ? 'owner' : (isExtra ? 'extra' : 'admin');
+    const roleClass = isOwner ? 'owner' : (isExtra ? 'extra-owner' : 'admin');
     const roleIcon = isOwner ? '👑' : (isExtra ? '⚡' : '🛡️');
-    const roleDisplay = isOwner ? 'OWNER' : (isExtra ? 'EXTRA OWNER' : 'ADMINISTRATOR');
+    const roleDisplay = isOwner ? 'Owner' : (isExtra ? 'Extra Owner' : 'Administrator');
     
     // Initials for avatar fallback
     const initials = s.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'KX';
     const avatarHtml = s.icon 
-      ? `<img src="${s.icon}" alt="${escapeHtml(s.name)}" onerror="this.parentElement.innerHTML='${initials}'">`
-      : `<span>${initials}</span>`;
+      ? `<img src="${s.icon}" alt="${escapeHtml(s.name)}" class="server-icon" onerror="this.outerHTML='<div class=\\'server-icon-placeholder\\'>${initials}</div>'">`
+      : `<div class="server-icon-placeholder">${initials}</div>`;
 
-    // Action button: If hasBot -> "Configure" (red gradient), If not -> "+ Add Bot to Server" (dark)
-    const inviteLink = `https://discord.com/oauth2/authorize?client_id=${botId}&permissions=8&scope=bot%20applications.commands&guild_id=${s.id}`;
+    const inviteLink = `https://discord.com/oauth2/authorize?client_id=${botId}&permissions=8&integration_type=0&scope=bot+guilds&guild_id=${s.id}`;
     
     const actionBtn = s.hasBot
-      ? `<button class="btn-card-configure" onclick="selectAndConfigureGuild('${s.id}', '${encodeURIComponent(s.name)}')">${t('configure')}</button>`
-      : `<a href="${inviteLink}" target="_blank" class="btn-card-addbot">${t('inviteBot')}</a>`;
-
-    const statusBadge = s.hasBot
-      ? `<div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #00e676; font-weight: 700; margin-bottom: 0.8rem;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #00e676; box-shadow: 0 0 6px #00e676;"></span>${t('botActive')}</div>`
-      : `<div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.8rem;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #64748b;"></span>${t('notAdded')}</div>`;
+      ? `<button class="server-action-btn configure" onclick="selectAndConfigureGuild('${s.id}', '${encodeURIComponent(s.name)}')">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+           <span>Configure</span>
+         </button>`
+      : `<a href="${inviteLink}" target="_blank" class="server-action-btn add-bot">
+           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+           <span>+ Add Bot</span>
+         </a>`;
 
     return `
-      <div class="zynrax-server-card ${s.hasBot ? 'has-bot' : ''}" data-guild-id="${s.id}" data-guild-name="${escapeHtml(s.name.toLowerCase())}">
-        <div class="zynrax-card-avatar">
-          ${avatarHtml}
+      <div class="server-card ${s.hasBot ? 'has-bot' : ''}" data-guild-id="${s.id}" data-guild-name="${escapeHtml(s.name.toLowerCase())}">
+        <div class="server-card-top">
+          <div class="server-icon-wrapper">
+            ${avatarHtml}
+          </div>
+          <div class="server-info">
+            <h3 class="server-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</h3>
+            <div class="server-role">
+              <span class="role-badge ${roleClass}">${roleIcon} ${roleDisplay}</span>
+            </div>
+          </div>
         </div>
-        <div class="zynrax-card-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
-        <div class="zynrax-badge-role ${roleClass}">
-          <span>${roleIcon}</span>
-          <span>${roleDisplay}</span>
+        <div class="server-card-bottom">
+          ${actionBtn}
         </div>
-        ${statusBadge}
-        ${actionBtn}
       </div>
     `;
   }).join('');
