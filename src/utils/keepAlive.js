@@ -84,8 +84,10 @@ function startKeepAlive(client) {
 
     // Redirect to Discord OAuth2 Authorization URL (Scopes: identify guilds guilds.join)
     if ((pathname === '/api/auth/login' || pathname === '/login') && req.method === 'GET') {
-      const redirectUri = `${config.dashboardUrl}/api/auth/callback`;
-      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=code&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds%20guilds.join`;
+      const hasSecret = Boolean(config.clientSecret);
+      const responseType = hasSecret ? 'code' : 'token';
+      const redirectUri = hasSecret ? `${config.dashboardUrl}/api/auth/callback` : `${config.dashboardUrl}/`;
+      const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${config.clientId}&response_type=${responseType}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds%20guilds.join`;
       res.writeHead(302, { Location: discordAuthUrl });
       res.end();
       return;
@@ -100,7 +102,7 @@ function startKeepAlive(client) {
     }
 
     // Discord OAuth2 Callback handler (Server-Side Code Exchange & Token Storage)
-    if (pathname === '/api/auth/callback' && req.method === 'GET') {
+    if ((pathname === '/api/auth/callback' || (parsedUrl.query.code && (pathname === '/' || pathname === '/dashboard'))) && req.method === 'GET') {
       const code = parsedUrl.query.code;
       if (!code) {
         res.writeHead(302, { Location: '/dashboard?error=missing_code' });

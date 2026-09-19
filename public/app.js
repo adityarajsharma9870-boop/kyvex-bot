@@ -57,18 +57,8 @@ window.loginWithDiscordOAuth = function() {
   const clientId = '1545804677436940339';
   const scopes = 'identify%20guilds%20guilds.join';
 
-  // If running on local or custom node server, use secure server-side authorization code flow
-  // (Access token is stored securely server-side in session, never exposed in browser)
-  const isLocalOrServer = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocalOrServer) {
-    window.location.href = '/api/auth/login';
-    return;
-  }
-
-  // On static/serverless hosting (e.g. Vercel static), redirect to Discord OAuth2 with required scopes
-  let cleanPath = window.location.pathname.replace(/\/index\.html$/i, '');
-  if (!cleanPath.endsWith('/')) cleanPath += '/';
-  const redirectUri = window.location.origin + cleanPath + 'dashboard';
+  // Use the standard registered root redirect URI (matches Discord Developer Portal exactly)
+  const redirectUri = window.location.origin + '/';
   const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}`;
   window.location.href = oauthUrl;
 };

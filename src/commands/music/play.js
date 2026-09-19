@@ -19,24 +19,29 @@ module.exports = {
   category: 'music',
 
   async execute(interaction, client) {
+    try {
+      if (!interaction.deferred && !interaction.replied) {
+        await interaction.deferReply().catch(() => {});
+      }
+    } catch (e) {}
+
     const voiceChannel = interaction.member.voice.channel;
     if (!voiceChannel) {
-      return interaction.reply({
-        embeds: [createErrorEmbed('Voice Channel Required', 'You must be connected to a voice channel to play music!')],
-        ephemeral: true
-      });
+      const payload = {
+        embeds: [createErrorEmbed('Voice Channel Required', 'You must be connected to a voice channel to play music!')]
+      };
+      return interaction.deferred ? interaction.editReply(payload) : interaction.reply({ ...payload, ephemeral: true });
     }
 
     const botVoiceChannel = interaction.guild.members.me.voice.channel;
     if (botVoiceChannel && botVoiceChannel.id !== voiceChannel.id) {
-      return interaction.reply({
-        embeds: [createErrorEmbed('Different Voice Channel', `You must be in the same voice channel as me: ${botVoiceChannel}!`)],
-        ephemeral: true
-      });
+      const payload = {
+        embeds: [createErrorEmbed('Different Voice Channel', `You must be in the same voice channel as me: ${botVoiceChannel}!`)]
+      };
+      return interaction.deferred ? interaction.editReply(payload) : interaction.reply({ ...payload, ephemeral: true });
     }
 
     const rawQuery = interaction.options.getString('query').trim();
-    await interaction.deferReply();
 
     const isDirectUrl = rawQuery.startsWith('http://') || rawQuery.startsWith('https://');
 
