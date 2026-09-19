@@ -55,7 +55,8 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
     const flags = {
       dumpSingleJson: true,
       noWarnings: true,
-      extractorArgs: 'youtube:player_client=android,ios',
+      ignoreConfig: true,
+      extractorArgs: 'youtube:player_client=tv,mweb,ios',
       preferFreeFormats: true,
       skipDownload: true,
       simulate: true,
@@ -81,9 +82,9 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
     try {
       info = await json(url, flags);
     } catch (err) {
-      // If android,ios encounters an issue, retry with web,ios fallback
+      // Fallback with alternate TV/Web client configuration
       try {
-        flags = this.getFlags({ extractorArgs: 'youtube:player_client=web,ios' });
+        flags = this.getFlags({ extractorArgs: 'youtube:player_client=mweb,tv' });
         info = await json(url, flags);
       } catch (secondErr) {
         const errMsg = secondErr.stderr || secondErr.message || err.stderr || err.message || `${err}`;
@@ -123,7 +124,7 @@ class KyvexYtDlpPlugin extends PlayableExtractorPlugin {
       info = await json(song.url, flags);
     } catch (err) {
       try {
-        flags = this.getFlags({ format: 'ba/ba*', extractorArgs: 'youtube:player_client=web,ios' });
+        flags = this.getFlags({ format: 'ba/ba*', extractorArgs: 'youtube:player_client=tv,mweb' });
         info = await json(song.url, flags);
       } catch (secondErr) {
         const errMsg = secondErr.stderr || secondErr.message || err.stderr || err.message || `${err}`;
