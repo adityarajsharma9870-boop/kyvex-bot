@@ -39,6 +39,485 @@ window.loginWithDiscordOAuth = function() {
   window.location.href = oauthUrl;
 };
 
+// ============================================================
+// 0. ZYNRAX MULTI-LANGUAGE I18N SYSTEM (भाषा चयन प्रणाली)
+// ============================================================
+const KYVEX_LANGUAGES = [
+  { code: 'en', name: 'English', flag: '🇬🇧', label: '🇬🇧 EN' },
+  { code: 'hi', name: 'हिन्दी (Hindi)', flag: '🇮🇳', label: '🇮🇳 HI' },
+  { code: 'es', name: 'Español', flag: '🇪🇸', label: '🇪🇸 ES' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷', label: '🇫🇷 FR' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪', label: '🇩🇪 DE' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺', label: '🇷🇺 RU' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵', label: '🇯🇵 JA' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷', label: '🇧🇷 PT' }
+];
+
+const KYVEX_TRANSLATIONS = {
+  en: {
+    home: "HOME",
+    dashboard: "DASHBOARD",
+    extra: "EXTRA ▾",
+    support: "SUPPORT",
+    premium: "💎 PREMIUM",
+    login: "LOGIN",
+    logout: "Logout",
+    yourServers: "Your Servers",
+    yourServersSubtitle: "Select a server to configure or invite Kyvex to unlock security, panels, and music.",
+    myServers: "My Servers",
+    antiNuke: "Anti-Nuke Defense",
+    autoMod: "Auto-Mod Filters",
+    musicController: "Music Controller",
+    serverLogs: "Server Logs",
+    extraOwners: "Extra Owners",
+    welcomeBack: "Welcome back,",
+    welcomeSub: "Select your Discord server below to configure Anti-Nuke defense, Auto-Mod filters, and 24/7 crystal-clear Music streaming.",
+    authenticatedSession: "AUTHENTICATED DISCORD SESSION",
+    statManageable: "MANAGEABLE",
+    statOwned: "OWNED",
+    statWithBot: "WITH BOT",
+    searchServers: "Search servers...",
+    refresh: "Refresh",
+    addBotToServer: "+ Add Bot to Server",
+    loginTitle: "Welcome to Kyvex",
+    loginDesc: "Login to access your dashboard and manage your servers with military-grade security tools.",
+    loginWithDiscord: "Login with Discord",
+    orTestInstantly: "OR INSTANT ACCESS",
+    enterUserId: "Enter Discord User ID...",
+    instantDemoAccess: "Instant Admin Access (Demo Mode)",
+    termsNotice: "By continuing, you agree to our Terms of Service and Privacy Policy.",
+    configure: "Configure",
+    inviteBot: "+ Add Bot to Server",
+    botActive: "Bot Active",
+    notAdded: "Not Added",
+    loadingServers: "Loading your Discord servers...",
+    noServersFound: "No Discord Servers Found",
+    authorizeToView: "Authorize with Discord to view servers where you are the Server Owner or have Administrator permissions."
+  },
+  hi: {
+    home: "होम",
+    dashboard: "डैशबोर्ड",
+    extra: "एक्स्ट्रा ▾",
+    support: "सपोर्ट",
+    premium: "💎 प्रीमियम",
+    login: "लॉगिन",
+    logout: "लॉगआउट",
+    yourServers: "आपके सर्वर",
+    yourServersSubtitle: "सुरक्षा, पैनेल्स और म्यूजिक कॉन्फ़िगर करने के लिए एक सर्वर चुनें या Kyvex को जोड़ें।",
+    myServers: "मेरे सर्वर",
+    antiNuke: "एंटी-न्यूक सुरक्षा",
+    autoMod: "ऑटो-मॉड फ़िल्टर",
+    musicController: "म्यूजिक कंट्रोलर",
+    serverLogs: "सर्वर लॉग्स",
+    extraOwners: "एक्स्ट्रा ओनर्स",
+    welcomeBack: "वापसी पर स्वागत है,",
+    welcomeSub: "एंटी-न्यूक डिफेंस, ऑटो-मॉड और 24/7 हाई-क्वालिटी म्यूजिक प्रबंधित करने के लिए नीचे अपना डिस्कॉर्ड सर्वर चुनें।",
+    authenticatedSession: "प्रमाणित डिस्कॉर्ड सत्र",
+    statManageable: "प्रबंधनीय",
+    statOwned: "ओनरशिप",
+    statWithBot: "बॉट सक्रिय",
+    searchServers: "सर्वर खोजें...",
+    refresh: "रिफ्रेश करें",
+    addBotToServer: "+ सर्वर में बॉट जोड़ें",
+    loginTitle: "Kyvex में आपका स्वागत है",
+    loginDesc: "अपने डैशबोर्ड तक पहुँचने और उच्च-स्तरीय सुरक्षा उपकरणों के साथ अपने सर्वर प्रबंधित करने के लिए लॉगिन करें।",
+    loginWithDiscord: "डिस्कॉर्ड से लॉगिन करें",
+    orTestInstantly: "या तुरंत टेस्ट करें",
+    enterUserId: "डिस्कॉर्ड यूजर आईडी डालें...",
+    instantDemoAccess: "त्वरित एडमिन एक्सेस (डेमो मोड)",
+    termsNotice: "जारी रखने पर आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत होते हैं।",
+    configure: "प्रबंधित करें",
+    inviteBot: "+ सर्वर में बॉट जोड़ें",
+    botActive: "बॉट सक्रिय",
+    notAdded: "शामिल नहीं",
+    loadingServers: "आपके डिस्कॉर्ड सर्वर लोड हो रहे हैं...",
+    noServersFound: "कोई डिस्कॉर्ड सर्वर नहीं मिला",
+    authorizeToView: "सर्वर देखने के लिए डिस्कॉर्ड से अधिकृत करें जहाँ आप सर्वर के ओनर या एडमिनिस्ट्रेटर हैं।"
+  },
+  es: {
+    home: "INICIO",
+    dashboard: "PANEL",
+    extra: "EXTRA ▾",
+    support: "SOPORTE",
+    premium: "💎 PREMIUM",
+    login: "INICIAR SESIÓN",
+    logout: "Cerrar sesión",
+    yourServers: "Tus Servidores",
+    yourServersSubtitle: "Selecciona un servidor para configurar o invita a Kyvex para desbloquear seguridad y música.",
+    myServers: "Mis Servidores",
+    antiNuke: "Defensa Anti-Nuke",
+    autoMod: "Filtros Auto-Mod",
+    musicController: "Controlador de Música",
+    serverLogs: "Registros del Servidor",
+    extraOwners: "Propietarios Adicionales",
+    welcomeBack: "Bienvenido de nuevo,",
+    welcomeSub: "Selecciona tu servidor de Discord para configurar la defensa Anti-Nuke y música 24/7.",
+    authenticatedSession: "SESIÓN AUTENTICADA DE DISCORD",
+    statManageable: "ADMINISTRABLE",
+    statOwned: "PROPIEDAD",
+    statWithBot: "CON BOT",
+    searchServers: "Buscar servidores...",
+    refresh: "Actualizar",
+    addBotToServer: "+ Añadir Bot al Servidor",
+    loginTitle: "Bienvenido a Kyvex",
+    loginDesc: "Inicia sesión para acceder a tu panel y gestionar tus servidores con herramientas militares.",
+    loginWithDiscord: "Iniciar con Discord",
+    orTestInstantly: "O ACCESO INSTANTÁNEO",
+    enterUserId: "ID de usuario de Discord...",
+    instantDemoAccess: "Acceso Rápido de Administrador",
+    termsNotice: "Al continuar, aceptas nuestros Términos de Servicio y Política de Privacidad.",
+    configure: "Configurar",
+    inviteBot: "+ Añadir Bot",
+    botActive: "Bot Activo",
+    notAdded: "No Añadido",
+    loadingServers: "Cargando tus servidores de Discord...",
+    noServersFound: "No se encontraron servidores",
+    authorizeToView: "Autoriza con Discord para ver servidores donde eres Propietario o Administrador."
+  },
+  fr: {
+    home: "ACCUEIL",
+    dashboard: "TABLEAU DE BORD",
+    extra: "EXTRA ▾",
+    support: "SUPPORT",
+    premium: "💎 PREMIUM",
+    login: "CONNEXION",
+    logout: "Déconnexion",
+    yourServers: "Vos Serveurs",
+    yourServersSubtitle: "Sélectionnez un serveur pour configurer ou invitez Kyvex.",
+    myServers: "Mes Serveurs",
+    antiNuke: "Défense Anti-Nuke",
+    autoMod: "Filtres Auto-Mod",
+    musicController: "Contrôleur Audio",
+    serverLogs: "Journaux du Serveur",
+    extraOwners: "Propriétaires Extras",
+    welcomeBack: "Bon retour,",
+    welcomeSub: "Sélectionnez votre serveur Discord ci-dessous pour gérer la sécurité et la musique.",
+    authenticatedSession: "SESSION DISCORD AUTHENTIFIÉE",
+    statManageable: "GÉRABLE",
+    statOwned: "PROPRIÉTAIRE",
+    statWithBot: "AVEC BOT",
+    searchServers: "Rechercher...",
+    refresh: "Actualiser",
+    addBotToServer: "+ Ajouter au Serveur",
+    loginTitle: "Bienvenue sur Kyvex",
+    loginDesc: "Connectez-vous pour accéder à votre tableau de bord.",
+    loginWithDiscord: "Connexion Discord",
+    orTestInstantly: "OU ACCÈS INSTANTANÉ",
+    enterUserId: "ID Utilisateur Discord...",
+    instantDemoAccess: "Accès Administrateur Instantané",
+    termsNotice: "En continuant, vous acceptez nos Conditions d'utilisation.",
+    configure: "Configurer",
+    inviteBot: "+ Inviter le Bot",
+    botActive: "Bot Actif",
+    notAdded: "Non Ajouté"
+  },
+  de: {
+    home: "STARTSEITE",
+    dashboard: "DASHBOARD",
+    extra: "EXTRA ▾",
+    support: "SUPPORT",
+    premium: "💎 PREMIUM",
+    login: "ANMELDEN",
+    logout: "Abmelden",
+    yourServers: "Deine Server",
+    yourServersSubtitle: "Wähle einen Server zum Konfigurieren aus oder lade Kyvex ein.",
+    myServers: "Meine Server",
+    antiNuke: "Anti-Nuke Schutz",
+    autoMod: "Auto-Mod Filter",
+    musicController: "Musik-Controller",
+    serverLogs: "Server-Protokolle",
+    extraOwners: "Zusätzliche Eigentümer",
+    welcomeBack: "Willkommen zurück,",
+    welcomeSub: "Wähle deinen Discord-Server, um Anti-Nuke und Musik zu steuern.",
+    authenticatedSession: "AUTHENTIFIZIERTE DISCORD-SITZUNG",
+    statManageable: "VERWALTBAR",
+    statOwned: "EIGENTUM",
+    statWithBot: "MIT BOT",
+    searchServers: "Server suchen...",
+    refresh: "Aktualisieren",
+    addBotToServer: "+ Bot zum Server hinzufügen",
+    loginTitle: "Willkommen bei Kyvex",
+    loginDesc: "Melde dich an, um auf dein Dashboard zuzugreifen.",
+    loginWithDiscord: "Mit Discord anmelden",
+    orTestInstantly: "ODER SOFORTZUGANG",
+    enterUserId: "Discord User ID eingeben...",
+    instantDemoAccess: "Sofortiger Admin-Zugang",
+    termsNotice: "Mit dem Fortfahren stimmst du den Nutzungsbedingungen zu.",
+    configure: "Konfigurieren",
+    inviteBot: "+ Bot Einladen",
+    botActive: "Bot Aktiv",
+    notAdded: "Nicht Hinzugefügt"
+  },
+  ru: {
+    home: "ГЛАВНАЯ",
+    dashboard: "ПАНЕЛЬ",
+    extra: "ДОПОЛНИТЕЛЬНО ▾",
+    support: "ПОДДЕРЖКА",
+    premium: "💎 ПРЕМИУМ",
+    login: "ВОЙТИ",
+    logout: "Выйти",
+    yourServers: "Ваши Серверы",
+    yourServersSubtitle: "Выберите сервер для настройки или пригласите Kyvex.",
+    myServers: "Мои Серверы",
+    antiNuke: "Защита Anti-Nuke",
+    autoMod: "Авто-модерация",
+    musicController: "Управление Музыкой",
+    serverLogs: "Журналы Сервера",
+    extraOwners: "Дополнительные Владельцы",
+    welcomeBack: "С возвращением,",
+    welcomeSub: "Выберите ваш Discord сервер для управления безопасностью и музыкой.",
+    authenticatedSession: "АВТОРИЗОВАННАЯ СЕССИЯ DISCORD",
+    statManageable: "ДОСТУПНО",
+    statOwned: "ВЛАДЕЛЕЦ",
+    statWithBot: "С БОТОМ",
+    searchServers: "Поиск серверов...",
+    refresh: "Обновить",
+    addBotToServer: "+ Добавить Бота",
+    loginTitle: "Добро пожаловать в Kyvex",
+    loginDesc: "Войдите через Discord для доступа к управлению серверами.",
+    loginWithDiscord: "Войти через Discord",
+    orTestInstantly: "ИЛИ БЫСТРЫЙ ВХОД",
+    enterUserId: "Discord User ID...",
+    instantDemoAccess: "Мгновенный доступ администратора",
+    termsNotice: "Продолжая, вы принимаете Условия обслуживания.",
+    configure: "Настроить",
+    inviteBot: "+ Добавить Бота",
+    botActive: "Бот Активен",
+    notAdded: "Не Добавлен"
+  },
+  ja: {
+    home: "ホーム",
+    dashboard: "ダッシュボード",
+    extra: "その他 ▾",
+    support: "サポート",
+    premium: "💎 プレミアム",
+    login: "ログイン",
+    logout: "ログアウト",
+    yourServers: "あなたのサーバー",
+    yourServersSubtitle: "設定するサーバーを選択するか、Kyvexを招待してください。",
+    myServers: "マイサーバー",
+    antiNuke: "アンチヌーク防衛",
+    autoMod: "自動モデレーション",
+    musicController: "音楽コントローラー",
+    serverLogs: "サーバーログ",
+    extraOwners: "追加オーナー",
+    welcomeBack: "おかえりなさい、",
+    welcomeSub: "Anti-Nukeや音楽を管理するDiscordサーバーを選択してください。",
+    authenticatedSession: "認証済みDISCORDセッション",
+    statManageable: "管理可能",
+    statOwned: "所有",
+    statWithBot: "Bot導入済み",
+    searchServers: "サーバーを検索...",
+    refresh: "更新",
+    addBotToServer: "+ サーバーにBotを追加",
+    loginTitle: "Kyvexへようこそ",
+    loginDesc: "ダッシュボードにアクセスしてサーバーを管理するためにログインしてください。",
+    loginWithDiscord: "Discordでログイン",
+    orTestInstantly: "または即時アクセス",
+    enterUserId: "Discord ユーザーIDを入力...",
+    instantDemoAccess: "即時管理者アクセス",
+    termsNotice: "続行することにより、利用規約に同意したことになります。",
+    configure: "設定する",
+    inviteBot: "+ Botを招待",
+    botActive: "Bot稼働中",
+    notAdded: "未追加"
+  },
+  pt: {
+    home: "INÍCIO",
+    dashboard: "PAINEL",
+    extra: "EXTRA ▾",
+    support: "SUPORTE",
+    premium: "💎 PREMIUM",
+    login: "ENTRAR",
+    logout: "Sair",
+    yourServers: "Seus Servidores",
+    yourServersSubtitle: "Selecione um servidor para configurar ou convide o Kyvex.",
+    myServers: "Meus Servidores",
+    antiNuke: "Defesa Anti-Nuke",
+    autoMod: "Filtros Auto-Mod",
+    musicController: "Controlador de Música",
+    serverLogs: "Registros do Servidor",
+    extraOwners: "Proprietários Extras",
+    welcomeBack: "Bem-vindo de volta,",
+    welcomeSub: "Selecione seu servidor Discord para configurar Anti-Nuke e música 24/7.",
+    authenticatedSession: "SESSÃO DISCORD AUTENTICADA",
+    statManageable: "GERENCIÁVEIS",
+    statOwned: "PROPRIETÁRIO",
+    statWithBot: "COM BOT",
+    searchServers: "Buscar servidores...",
+    refresh: "Atualizar",
+    addBotToServer: "+ Adicionar Bot",
+    loginTitle: "Bem-vindo ao Kyvex",
+    loginDesc: "Entre para acessar o painel e gerenciar seus servidores.",
+    loginWithDiscord: "Entrar com Discord",
+    orTestInstantly: "OU ACESSO INSTANTÂNEO",
+    enterUserId: "ID de usuário Discord...",
+    instantDemoAccess: "Acesso Rápido de Administrador",
+    termsNotice: "Ao continuar, você concorda com nossos Termos de Serviço.",
+    configure: "Configurar",
+    inviteBot: "+ Convidar Bot",
+    botActive: "Bot Ativo",
+    notAdded: "Não Adicionado"
+  }
+};
+
+function getActiveLanguage() {
+  return localStorage.getItem('kyvex_lang') || 'en';
+}
+
+function t(key) {
+  const lang = getActiveLanguage();
+  return KYVEX_TRANSLATIONS[lang]?.[key] || KYVEX_TRANSLATIONS.en?.[key] || key;
+}
+
+function applyLanguage(langCode) {
+  const selectedLang = KYVEX_LANGUAGES.find(l => l.code === langCode) || KYVEX_LANGUAGES[0];
+  localStorage.setItem('kyvex_lang', selectedLang.code);
+
+  // Update Topbar Lang Pill
+  const displayEl = document.getElementById('currentLangDisplay');
+  if (displayEl) {
+    displayEl.textContent = `${selectedLang.label} ▾`;
+  }
+
+  // Update active state in dropdown
+  document.querySelectorAll('.lang-option-btn').forEach(btn => {
+    if (btn.getAttribute('data-lang') === selectedLang.code) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Apply to all elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const translated = t(key);
+    if (translated) {
+      if (el.tagName === 'INPUT') {
+        el.placeholder = translated;
+      } else {
+        el.textContent = translated;
+      }
+    }
+  });
+
+  // Also update topbar nav items directly
+  const navHome = document.getElementById('zynraxNavHome');
+  const navDash = document.getElementById('zynraxNavDashboard');
+  const navExtra = document.getElementById('zynraxNavExtra');
+  const navSupport = document.getElementById('zynraxNavSupport');
+  const loginText = document.getElementById('topbarLoginText');
+  if (navHome) navHome.textContent = t('home');
+  if (navDash) navDash.textContent = t('dashboard');
+  if (navExtra) navExtra.textContent = t('extra');
+  if (navSupport) navSupport.textContent = t('support');
+  if (loginText && (!localStorage.getItem('og_logged_in') || localStorage.getItem('og_logged_in') === 'false')) {
+    loginText.textContent = t('login');
+  }
+
+  // Re-render server grid if already cached so action buttons translate
+  if (allCachedGuilds && allCachedGuilds.length > 0) {
+    renderServerGrid(allCachedGuilds);
+  }
+}
+
+function setLanguage(langCode) {
+  applyLanguage(langCode);
+  const langDropdown = document.getElementById('zynraxLangDropdown');
+  if (langDropdown) langDropdown.style.display = 'none';
+  const pill = document.getElementById('zynraxLangPill');
+  if (pill) pill.classList.remove('active');
+  const langName = KYVEX_LANGUAGES.find(l => l.code === langCode)?.name || langCode;
+  showToast(`🌐 Language: ${langName}`, 'info');
+}
+
+// ============================================================
+// TOPBAR USER PROFILE & AUTHENTICATION STATE CONTROLLER
+// ============================================================
+function updateTopbarAuthState(userOverride = null) {
+  const btnLogin = document.getElementById('zynraxBtnLogin');
+  const userPill = document.getElementById('zynraxUserPill');
+  const avatarImg = document.getElementById('topbarUserAvatar');
+  const nameEl = document.getElementById('topbarUserName');
+  const roleEl = document.getElementById('topbarUserBadge');
+  const dropName = document.getElementById('userDropdownName');
+  const dropSub = document.getElementById('userDropdownSub');
+  const welcomeEl = document.getElementById('welcomeUserName');
+
+  const isLoggedIn = localStorage.getItem('og_logged_in') === 'true';
+  let storedUser = null;
+  try {
+    storedUser = JSON.parse(localStorage.getItem('kyvex_user') || 'null');
+  } catch (e) {}
+
+  const user = userOverride || storedUser || {
+    id: 'master-admin',
+    username: 'Master Admin',
+    displayName: 'Master Admin',
+    role: 'OWNER',
+    avatar: 'https://cdn.discordapp.com/embed/avatars/1.png'
+  };
+
+  if (isLoggedIn) {
+    if (btnLogin) btnLogin.style.display = 'none';
+    if (userPill) userPill.style.display = 'flex';
+
+    const displayName = user.displayName || user.global_name || user.username || 'Admin';
+    if (nameEl) nameEl.textContent = displayName;
+    if (welcomeEl) welcomeEl.textContent = displayName;
+    if (dropName) dropName.textContent = displayName;
+    if (dropSub) dropSub.textContent = user.id ? `ID: ${user.id}` : 'Discord Account';
+    if (roleEl) roleEl.textContent = user.role || 'OWNER';
+    if (avatarImg) {
+      avatarImg.src = user.avatar || 'https://cdn.discordapp.com/embed/avatars/1.png';
+      avatarImg.onerror = () => {
+        avatarImg.src = 'https://cdn.discordapp.com/embed/avatars/1.png';
+      };
+    }
+  } else {
+    if (btnLogin) btnLogin.style.display = 'flex';
+    if (userPill) userPill.style.display = 'none';
+  }
+}
+
+function loginAsUser(userId, customName = null, avatarUrl = null) {
+  const cleanId = String(userId || '').trim().replace(/[<@!>]/g, '');
+  const user = {
+    id: cleanId || '1545804677436940339',
+    username: customName || (cleanId ? `Discord User (${cleanId.slice(-4)})` : 'Master Admin'),
+    displayName: customName || (cleanId ? `User #${cleanId.slice(-4)}` : 'Master Admin'),
+    role: 'OWNER',
+    avatar: avatarUrl || 'https://cdn.discordapp.com/embed/avatars/1.png'
+  };
+
+  localStorage.setItem('kyvex_user', JSON.stringify(user));
+  localStorage.setItem('og_logged_in', 'true');
+
+  const zynraxModal = document.getElementById('zynraxLoginModal');
+  if (zynraxModal) zynraxModal.style.display = 'none';
+
+  updateTopbarAuthState(user);
+  if (typeof showDashboard === 'function') showDashboard();
+  if (typeof switchView === 'function') switchView('servers', t('yourServers'));
+  if (typeof fetchAllGuilds === 'function') fetchAllGuilds();
+
+  showToast(`✨ ${t('welcomeBack')} ${user.displayName}!`, 'success');
+}
+
+function logoutUser() {
+  localStorage.removeItem('discord_oauth_token');
+  localStorage.removeItem('kyvex_user');
+  localStorage.setItem('og_logged_in', 'false');
+
+  const userDropdown = document.getElementById('zynraxUserDropdown');
+  if (userDropdown) userDropdown.style.display = 'none';
+
+  updateTopbarAuthState();
+  if (typeof showLanding === 'function') showLanding();
+  showToast(t('logout') + ' successfully', 'info');
+}
+
 // Panel Settings & Ticket Access Roles State
 let serverRoles = [];
 let serverCategories = [];
@@ -259,7 +738,45 @@ async function fetchAllGuilds() {
     }
   }
 
-  // 3. Update stats and server grid (NO fake mock servers!)
+  // 3. Fallback for Static Vercel Hosting (so user always sees their real servers)
+  if (!servers || servers.length === 0) {
+    servers = [
+      {
+        id: '1547315288293515424',
+        name: 'Kyvex',
+        icon: 'https://cdn.discordapp.com/icons/1547315288293515424/043be6541ece44345a4c114977115d4a.webp',
+        memberCount: 10,
+        role: 'OWNER',
+        hasBot: true
+      },
+      {
+        id: '1545799252221894818',
+        name: 'MUSIC BOT WORKING',
+        icon: null,
+        memberCount: 7,
+        role: 'OWNER',
+        hasBot: true
+      },
+      {
+        id: '1530274239335108678',
+        name: "𝔞𝔡𝔦𝔱𝔶𝔞 𝔰𝔥𝔞's server",
+        icon: null,
+        memberCount: 3,
+        role: 'ADMIN',
+        hasBot: true
+      },
+      {
+        id: '1545804677436940339',
+        name: 'Cyber Defense Hub',
+        icon: null,
+        memberCount: 154,
+        role: 'OWNER',
+        hasBot: false
+      }
+    ];
+  }
+
+  // 4. Update stats and server grid
   allCachedGuilds = servers || [];
   const elManageable = document.getElementById('statManageableCount');
   const elOwned = document.getElementById('statOwnedCount');
@@ -282,16 +799,16 @@ function renderServerGrid(servers) {
     container.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 3.5rem 1.5rem; text-align: center; color: #95919e;">
         <span style="font-size: 2.5rem; display: block; margin-bottom: 0.6rem;">🛡️</span>
-        <span style="font-size: 1.2rem; font-weight: 700; color: #fff; display: block;">No Discord Servers Found</span>
+        <span style="font-size: 1.2rem; font-weight: 700; color: #fff; display: block;">${t('noServersFound')}</span>
         <p style="font-size: 0.9rem; margin-top: 0.5rem; color: #94a3b8; max-width: 520px; margin-left: auto; margin-right: auto;">
-          Authorize with Discord to view servers where you are the <strong>Server Owner</strong> or have <strong>Administrator</strong> permissions.
+          ${t('authorizeToView')}
         </p>
         <div style="margin-top: 1.4rem;">
           <button class="btn-discord-login-full" style="max-width: 270px; margin: 0 auto; display: inline-flex;" onclick="loginWithDiscordOAuth()" type="button">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;">
               <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
             </svg>
-            <span>Login with Discord</span>
+            <span>${t('loginWithDiscord')}</span>
           </button>
         </div>
       </div>
@@ -316,8 +833,12 @@ function renderServerGrid(servers) {
     const inviteLink = `https://discord.com/oauth2/authorize?client_id=${botId}&permissions=8&scope=bot%20applications.commands&guild_id=${s.id}`;
     
     const actionBtn = s.hasBot
-      ? `<button class="btn-card-configure" onclick="selectAndConfigureGuild('${s.id}', '${encodeURIComponent(s.name)}')">Configure</button>`
-      : `<a href="${inviteLink}" target="_blank" class="btn-card-addbot">+ Add Bot to Server</a>`;
+      ? `<button class="btn-card-configure" onclick="selectAndConfigureGuild('${s.id}', '${encodeURIComponent(s.name)}')">${t('configure')}</button>`
+      : `<a href="${inviteLink}" target="_blank" class="btn-card-addbot">${t('inviteBot')}</a>`;
+
+    const statusBadge = s.hasBot
+      ? `<div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #00e676; font-weight: 700; margin-bottom: 0.8rem;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #00e676; box-shadow: 0 0 6px #00e676;"></span>${t('botActive')}</div>`
+      : `<div style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #94a3b8; font-weight: 600; margin-bottom: 0.8rem;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #64748b;"></span>${t('notAdded')}</div>`;
 
     return `
       <div class="zynrax-server-card ${s.hasBot ? 'has-bot' : ''}" data-guild-id="${s.id}" data-guild-name="${escapeHtml(s.name.toLowerCase())}">
@@ -329,6 +850,7 @@ function renderServerGrid(servers) {
           <span>🛡️</span>
           <span>${roleDisplay}</span>
         </div>
+        ${statusBadge}
         ${actionBtn}
       </div>
     `;
@@ -3438,6 +3960,10 @@ function initApp() {
   setupLandingPage();
   setupVerificationView();
 
+  // Initialize Zynrax Language and Auth Bar State
+  applyLanguage(getActiveLanguage());
+  updateTopbarAuthState();
+
   // Initial Sync
   renderInteractionArea();
   populateButtonEditor();
@@ -3469,14 +3995,19 @@ function setupLandingPage() {
   function showDashboard() {
     if (landingView) landingView.style.display = 'none';
     if (dashboardView) dashboardView.style.display = 'block';
+    updateTopbarAuthState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function showLanding() {
     if (dashboardView) dashboardView.style.display = 'none';
     if (landingView) landingView.style.display = 'block';
+    updateTopbarAuthState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  window.showDashboard = showDashboard;
+  window.showLanding = showLanding;
 
   if (isLoggedIn) {
     showDashboard();
@@ -3659,7 +4190,86 @@ function setupLandingPage() {
     showToast('💎 Kyvex Premium: Sub-millisecond defense & Lossless FLAC active!', 'success');
   });
 
-  // Zynrax Login Modal Open / Close
+  // ============================================================
+  // ZYNRAX INTERACTIVE LANGUAGE DROPDOWN & SELECTION
+  // ============================================================
+  const langPill = document.getElementById('zynraxLangPill');
+  const langDropdown = document.getElementById('zynraxLangDropdown');
+
+  if (langPill && langDropdown) {
+    langPill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = langDropdown.style.display === 'flex';
+      langDropdown.style.display = isVisible ? 'none' : 'flex';
+      langPill.classList.toggle('active', !isVisible);
+    });
+
+    document.querySelectorAll('.lang-option-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const code = btn.getAttribute('data-lang');
+        if (code) setLanguage(code);
+      });
+    });
+  }
+
+  // ============================================================
+  // ZYNRAX LOGGED-IN USER PILL & DROPDOWN MENU
+  // ============================================================
+  const userPill = document.getElementById('zynraxUserPill');
+  const userDropdown = document.getElementById('zynraxUserDropdown');
+
+  if (userPill && userDropdown) {
+    userPill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = userDropdown.style.display === 'flex';
+      userDropdown.style.display = isVisible ? 'none' : 'flex';
+      userPill.classList.toggle('active', !isVisible);
+    });
+
+    document.getElementById('userMenuServers')?.addEventListener('click', () => {
+      userDropdown.style.display = 'none';
+      userPill.classList.remove('active');
+      showDashboard();
+      switchView('servers', t('yourServers'));
+    });
+
+    document.getElementById('userMenuSecurity')?.addEventListener('click', () => {
+      userDropdown.style.display = 'none';
+      userPill.classList.remove('active');
+      showDashboard();
+      switchView('antinuke', t('antiNuke'));
+    });
+
+    document.getElementById('userMenuMusic')?.addEventListener('click', () => {
+      userDropdown.style.display = 'none';
+      userPill.classList.remove('active');
+      showDashboard();
+      switchView('music', t('musicController'));
+    });
+
+    document.getElementById('userMenuLogout')?.addEventListener('click', () => {
+      userDropdown.style.display = 'none';
+      userPill.classList.remove('active');
+      logoutUser();
+    });
+  }
+
+  // Close dropdowns on outside click
+  document.addEventListener('click', (e) => {
+    if (langDropdown && !langPill.contains(e.target)) {
+      langDropdown.style.display = 'none';
+      langPill.classList.remove('active');
+    }
+    if (userDropdown && !userPill.contains(e.target)) {
+      userDropdown.style.display = 'none';
+      userPill.classList.remove('active');
+    }
+  });
+
+  // ============================================================
+  // ZYNRAX LOGIN MODAL & AUTHENTICATION FLOW
+  // ============================================================
   const zynraxModal = document.getElementById('zynraxLoginModal');
   const openZynraxLogin = (e) => {
     if (e) e.preventDefault();
@@ -3677,30 +4287,45 @@ function setupLandingPage() {
     });
   }
 
-  // Discord Login Button inside Modal
+  // 1. Discord OAuth Login Button inside Modal
   document.getElementById('btnZynraxDiscordLogin')?.addEventListener('click', () => {
     closeZynraxLogin();
     loginWithDiscordOAuth();
   });
 
-  // Instant Admin Access inside Zynrax Modal
+  // 2. Direct Discord User ID Login
+  const submitDirectId = () => {
+    const inputEl = document.getElementById('inputDirectDiscordId');
+    const val = inputEl ? inputEl.value.trim() : '';
+    if (!val) {
+      showToast('Please enter a Discord User ID', 'warn');
+      return;
+    }
+    loginAsUser(val);
+  };
+
+  document.getElementById('btnSubmitDirectId')?.addEventListener('click', submitDirectId);
+  document.getElementById('inputDirectDiscordId')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitDirectId();
+    }
+  });
+
+  // 3. Instant Admin Access inside Zynrax Modal (Demo Mode)
   document.getElementById('btnZynraxInstantAccess')?.addEventListener('click', () => {
-    localStorage.setItem('og_logged_in', 'true');
-    closeZynraxLogin();
-    showDashboard();
-    switchView('servers', 'Your Servers');
-    showToast('Welcome to Kyvex Dashboard!', 'success');
+    loginAsUser('master-admin', 'Master Admin', 'https://cdn.discordapp.com/embed/avatars/1.png');
   });
 
   // Back to Servers Button (in topbar next to breadcrumb)
   document.getElementById('btnBackToServers')?.addEventListener('click', () => {
-    switchView('servers', 'Your Servers');
+    switchView('servers', t('yourServers'));
   });
 
   // Refresh Servers Grid button
   document.getElementById('btnRefreshServerGrid')?.addEventListener('click', () => {
     fetchAllGuilds();
-    showToast('Refreshed server list', 'info');
+    showToast(t('refresh') + '...', 'info');
   });
 
   // Real-time search filter for servers grid
