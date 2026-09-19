@@ -34,7 +34,9 @@ let allCachedGuilds = [];
 // Global Discord OAuth2 Authorization Redirect
 window.loginWithDiscordOAuth = function() {
   const clientId = '1545804677436940339';
-  const redirectUri = window.location.origin + window.location.pathname;
+  let cleanPath = window.location.pathname.replace(/\/index\.html$/i, '');
+  if (!cleanPath.endsWith('/')) cleanPath += '/';
+  const redirectUri = window.location.origin + cleanPath;
   const oauthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=identify%20guilds`;
   window.location.href = oauthUrl;
 };
@@ -614,6 +616,7 @@ async function fetchAllGuilds() {
   const token = localStorage.getItem('discord_oauth_token');
   let servers = [];
   let userProfile = null;
+  let isOAuthSession = false;
 
   // 1. If user authorized via Discord OAuth2, fetch real Discord user & servers
   if (token) {
@@ -624,15 +627,26 @@ async function fetchAllGuilds() {
       });
       if (userRes.ok) {
         userProfile = await userRes.json();
+        isOAuthSession = true;
+        const dName = userProfile.global_name || userProfile.username || 'Discord User';
+        const avatarUrl = userProfile.avatar 
+          ? `https://cdn.discordapp.com/avatars/${userProfile.id}/${userProfile.avatar}.png`
+          : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
+        const userObj = {
+          id: userProfile.id,
+          username: userProfile.username,
+          displayName: dName,
+          role: 'OWNER',
+          avatar: avatarUrl
+        };
+        localStorage.setItem('kyvex_user', JSON.stringify(userObj));
+        updateTopbarAuthState(userObj);
+
         const nameEl = document.getElementById('userDisplayName');
         const avatarEl = document.getElementById('userAvatarImg');
-        const dName = userProfile.global_name || userProfile.username || 'Discord User';
         if (nameEl) nameEl.textContent = dName;
-        if (avatarEl) {
-          avatarEl.src = userProfile.avatar 
-            ? `https://cdn.discordapp.com/avatars/${userProfile.id}/${userProfile.avatar}.png`
-            : 'https://cdn.discordapp.com/embed/avatars/0.png';
-        }
+        if (avatarEl) avatarEl.src = avatarUrl;
       } else if (userRes.status === 401) {
         // Token expired
         localStorage.removeItem('discord_oauth_token');
@@ -645,13 +659,12 @@ async function fetchAllGuilds() {
         });
         if (guildsRes.ok) {
           const rawGuilds = await guildsRes.json();
-          // Filter strictly: User MUST be Owner (owner === true) OR have Administrator (0x8) OR Manage Server (0x20)
+          // STRICT FILTER: User MUST be Owner (owner === true) OR have Administrator (0x8)
           const manageable = rawGuilds.filter((g) => {
             const isOwner = g.owner === true;
             const perms = BigInt(g.permissions || '0');
             const isAdmin = (perms & 0x8n) === 0x8n;
-            const isManage = (perms & 0x20n) === 0x20n;
-            return isOwner || isAdmin || isManage;
+            return isOwner || isAdmin;
           });
 
           // Sync with Kyvex backend to verify bot presence and extra-owner status
@@ -683,10 +696,9 @@ async function fetchAllGuilds() {
               const isOwner = g.owner === true;
               const perms = BigInt(g.permissions || '0');
               const isAdmin = (perms & 0x8n) === 0x8n;
-              let role = 'ADMIN';
+              let role = 'ADMINISTRATOR';
               if (isOwner) role = 'OWNER';
-              else if (isAdmin) role = 'ADMIN';
-              else role = 'MANAGER';
+              else if (isAdmin) role = 'ADMINISTRATOR';
 
               return {
                 id: g.id,
@@ -705,8 +717,8 @@ async function fetchAllGuilds() {
     }
   }
 
-  // 2. If no OAuth token or OAuth returned no servers, fetch real servers the bot is currently in
-  if (!servers || servers.length === 0) {
+  // 2. If NOT an OAuth session, check if logged in via Direct ID or Demo
+  if (!isOAuthSession && (!servers || servers.length === 0)) {
     try {
       let res = await fetch('/api/guilds').catch(() => null);
       if (res && res.ok) {
@@ -738,8 +750,8 @@ async function fetchAllGuilds() {
     }
   }
 
-  // 3. Fallback for Static Vercel Hosting (so user always sees their real servers)
-  if (!servers || servers.length === 0) {
+  // 3. Fallback only if NOT an OAuth session (e.g. for Demo mode)
+  if (!isOAuthSession && (!servers || servers.length === 0)) {
     servers = [
       {
         id: '1547315288293515424',
@@ -762,7 +774,7 @@ async function fetchAllGuilds() {
         name: "𝔞𝔡𝔦𝔱𝔶𝔞 𝔰𝔥𝔞's server",
         icon: null,
         memberCount: 3,
-        role: 'ADMIN',
+        role: 'ADMINISTRATOR',
         hasBot: true
       },
       {
@@ -795,7 +807,31 @@ function renderServerGrid(servers) {
   const container = document.getElementById('zynraxServerGrid');
   if (!container) return;
 
+  const hasOAuthToken = Boolean(localStorage.getItem('discord_oauth_token'));
+
   if (!servers || servers.length === 0) {
+    if (hasOAuthToken) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; padding: 3.5rem 1.5rem; text-align: center; color: #95919e;">
+          <span style="font-size: 2.8rem; display: block; margin-bottom: 0.6rem;">👑</span>
+          <span style="font-size: 1.25rem; font-weight: 700; color: #fff; display: block;">No Server Ownership or Administrator Permissions Found</span>
+          <p style="font-size: 0.95rem; margin-top: 0.6rem; color: #94a3b8; max-width: 540px; margin-left: auto; margin-right: auto; line-height: 1.6;">
+            In Kyvex Dashboard, only servers where you are the <strong>Server Owner</strong> or possess <strong>Administrator</strong> permission appear.<br>
+            Servers where you are a regular member are hidden for security.
+          </p>
+          <div style="margin-top: 1.5rem; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+            <a href="https://discord.com/oauth2/authorize?client_id=1545804677436940339&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn-card-configure" style="max-width: 260px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+              <span>+ Add Kyvex to Server</span>
+            </a>
+            <button class="btn btn-outline-sm" onclick="fetchAllGuilds()" type="button" style="padding: 10px 18px;">
+              <span>🔄 Refresh</span>
+            </button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     container.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 3.5rem 1.5rem; text-align: center; color: #95919e;">
         <span style="font-size: 2.5rem; display: block; margin-bottom: 0.6rem;">🛡️</span>
@@ -819,9 +855,12 @@ function renderServerGrid(servers) {
   const botId = '1545804677436940339';
 
   container.innerHTML = servers.map((s) => {
-    const roleLower = (s.role || 'OWNER').toLowerCase();
-    const roleClass = roleLower.includes('extra') ? 'extra' : (roleLower.includes('admin') ? 'admin' : (roleLower.includes('manager') ? 'admin' : 'owner'));
-    const roleDisplay = s.role || 'OWNER';
+    const roleUpper = (s.role || 'OWNER').toUpperCase();
+    const isOwner = roleUpper === 'OWNER';
+    const isExtra = roleUpper.includes('EXTRA');
+    const roleClass = isOwner ? 'owner' : (isExtra ? 'extra' : 'admin');
+    const roleIcon = isOwner ? '👑' : (isExtra ? '⚡' : '🛡️');
+    const roleDisplay = isOwner ? 'OWNER' : (isExtra ? 'EXTRA OWNER' : 'ADMINISTRATOR');
     
     // Initials for avatar fallback
     const initials = s.name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase() || 'KX';
@@ -847,7 +886,7 @@ function renderServerGrid(servers) {
         </div>
         <div class="zynrax-card-name" title="${escapeHtml(s.name)}">${escapeHtml(s.name)}</div>
         <div class="zynrax-badge-role ${roleClass}">
-          <span>🛡️</span>
+          <span>${roleIcon}</span>
           <span>${roleDisplay}</span>
         </div>
         ${statusBadge}
@@ -3995,6 +4034,12 @@ function setupLandingPage() {
   function showDashboard() {
     if (landingView) landingView.style.display = 'none';
     if (dashboardView) dashboardView.style.display = 'block';
+
+    const navHome = document.getElementById('zynraxNavHome');
+    const navDash = document.getElementById('zynraxNavDashboard');
+    if (navHome) navHome.classList.remove('active');
+    if (navDash) navDash.classList.add('active');
+
     updateTopbarAuthState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -4002,6 +4047,12 @@ function setupLandingPage() {
   function showLanding() {
     if (dashboardView) dashboardView.style.display = 'none';
     if (landingView) landingView.style.display = 'block';
+
+    const navHome = document.getElementById('zynraxNavHome');
+    const navDash = document.getElementById('zynraxNavDashboard');
+    if (navHome) navHome.classList.add('active');
+    if (navDash) navDash.classList.remove('active');
+
     updateTopbarAuthState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -4015,25 +4066,24 @@ function setupLandingPage() {
     showLanding();
   }
 
-  // Open Login Modal
-  const openLogin = (e) => {
+  // Dashboard request handler from landing buttons
+  const handleLandingDashboardClick = (e) => {
     if (e) e.preventDefault();
-    if (loginModal) loginModal.style.display = 'flex';
+    const isUserLoggedIn = localStorage.getItem('og_logged_in') === 'true';
+    if (isUserLoggedIn) {
+      showDashboard();
+      switchView('servers', t('yourServers'));
+    } else {
+      const zynraxModal = document.getElementById('zynraxLoginModal');
+      if (zynraxModal) zynraxModal.style.display = 'flex';
+      showToast('Please login with Discord to access your Dashboard', 'info');
+    }
   };
 
-  document.getElementById('btnLandingLogin')?.addEventListener('click', openLogin);
-  document.getElementById('landingNavDashboard')?.addEventListener('click', () => {
-    showDashboard();
-    switchView('servers', 'Your Servers');
-  });
-  document.getElementById('btnCtaOpenDashboard')?.addEventListener('click', () => {
-    showDashboard();
-    switchView('servers', 'Your Servers');
-  });
-  document.getElementById('footerOpenDashboard')?.addEventListener('click', () => {
-    showDashboard();
-    switchView('servers', 'Your Servers');
-  });
+  document.getElementById('btnLandingLogin')?.addEventListener('click', handleLandingDashboardClick);
+  document.getElementById('landingNavDashboard')?.addEventListener('click', handleLandingDashboardClick);
+  document.getElementById('btnCtaOpenDashboard')?.addEventListener('click', handleLandingDashboardClick);
+  document.getElementById('footerOpenDashboard')?.addEventListener('click', handleLandingDashboardClick);
 
   // Command showcase preview switcher
   const cmdTabs = document.querySelectorAll('.cmd-tab');
@@ -4268,6 +4318,56 @@ function setupLandingPage() {
   });
 
   // ============================================================
+  // ZYNRAX TOPBAR NAVIGATION (HOME / DASHBOARD)
+  // ============================================================
+  document.getElementById('zynraxNavHome')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showLanding();
+  });
+
+  document.getElementById('zynraxNavDashboard')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const isUserLoggedIn = localStorage.getItem('og_logged_in') === 'true';
+    if (isUserLoggedIn) {
+      showDashboard();
+      switchView('servers', t('yourServers'));
+    } else {
+      openZynraxLogin();
+      showToast('Please login with Discord to access your Dashboard', 'info');
+    }
+  });
+
+  // User Dropdown navigation items
+  document.getElementById('userMenuServers')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboard();
+    switchView('servers', t('yourServers'));
+    const userDropdown = document.getElementById('zynraxUserDropdown');
+    if (userDropdown) userDropdown.style.display = 'none';
+  });
+
+  document.getElementById('userMenuSecurity')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboard();
+    switchView('security', t('antiNuke'));
+    const userDropdown = document.getElementById('zynraxUserDropdown');
+    if (userDropdown) userDropdown.style.display = 'none';
+  });
+
+  document.getElementById('userMenuMusic')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboard();
+    switchView('music', t('musicController'));
+    const userDropdown = document.getElementById('zynraxUserDropdown');
+    if (userDropdown) userDropdown.style.display = 'none';
+  });
+
+  document.getElementById('userMenuLogout')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    logoutUser();
+  });
+
+  // ============================================================
   // ZYNRAX LOGIN MODAL & AUTHENTICATION FLOW
   // ============================================================
   const zynraxModal = document.getElementById('zynraxLoginModal');
@@ -4380,10 +4480,7 @@ function setupLandingPage() {
   });
 
   document.getElementById('btnTopbarLogout')?.addEventListener('click', () => {
-    localStorage.removeItem('discord_oauth_token');
-    localStorage.setItem('og_logged_in', 'false');
-    showLanding();
-    showToast('Logged out successfully', 'info');
+    logoutUser();
   });
 
   // Initialize Anti-Nuke View Interactivity

@@ -151,13 +151,12 @@ function startKeepAlive(client) {
           });
           if (guildsRes.ok) {
             const rawGuilds = await guildsRes.json();
-            // Filter strictly: User must be Server Owner OR have Administrator (0x8) OR Manage Server (0x20)
+            // Filter strictly: User must be Server Owner OR have Administrator (0x8)
             userGuilds = rawGuilds.filter((g) => {
               const isOwner = g.owner === true;
               const perms = BigInt(g.permissions || '0');
               const isAdmin = (perms & 0x8n) === 0x8n;
-              const isManageGuild = (perms & 0x20n) === 0x20n;
-              return isOwner || isAdmin || isManageGuild;
+              return isOwner || isAdmin;
             });
           }
         } catch (gErr) {
@@ -461,13 +460,12 @@ function startKeepAlive(client) {
           const rawGuilds = Array.isArray(body.guilds) ? body.guilds : [];
           const userId = body.userId;
 
-          // Filter strictly: User must be Server Owner OR have Administrator (0x8) OR Manage Server (0x20)
+          // Filter strictly: User must be Server Owner OR have Administrator (0x8)
           const manageable = rawGuilds.filter((g) => {
             const isOwner = g.owner === true;
             const perms = BigInt(g.permissions || '0');
             const isAdmin = (perms & 0x8n) === 0x8n;
-            const isManage = (perms & 0x20n) === 0x20n;
-            return isOwner || isAdmin || isManage;
+            return isOwner || isAdmin;
           });
 
           const session = getSession(req);
@@ -483,15 +481,13 @@ function startKeepAlive(client) {
             const isOwner = g.owner === true;
             const perms = BigInt(g.permissions || '0');
             const isAdmin = (perms & 0x8n) === 0x8n;
-            const isManage = (perms & 0x20n) === 0x20n;
             const botGuild = client.guilds.cache.get(g.id);
             const hasBot = Boolean(botGuild);
 
-            let role = 'ADMIN';
+            let role = 'ADMINISTRATOR';
             if (isOwner) role = 'OWNER';
             else if (botGuild && userId && securityManager.isExtraOwner(botGuild, userId)) role = 'EXTRA OWNER';
-            else if (isAdmin) role = 'ADMIN';
-            else if (isManage) role = 'MANAGER';
+            else if (isAdmin) role = 'ADMINISTRATOR';
 
             return {
               id: g.id,
