@@ -4099,9 +4099,9 @@ function setupLandingPage() {
   const dashboardView = document.getElementById('dashboardAppView');
   const loginModal = document.getElementById('landingLoginModal');
 
-  // Check if URL has ?view=dashboard or ?dashboard=1 or path is /dashboard
+  // Check if URL has ?view=dashboard or ?dashboard=1 or path is /dashboard /callback
   const urlParams = new URLSearchParams(window.location.search);
-  const isDashboardPath = window.location.pathname === '/dashboard' || window.location.pathname.endsWith('/dashboard');
+  const isDashboardPath = window.location.pathname === '/dashboard' || window.location.pathname.endsWith('/dashboard') || window.location.pathname === '/callback' || window.location.pathname.endsWith('/callback');
   const wantsDashboard = urlParams.get('view') === 'dashboard' || urlParams.get('dashboard') === '1' || window.location.hash === '#dashboard' || isDashboardPath;
   
   const isLoggedIn = localStorage.getItem('og_logged_in') === 'true' || wantsDashboard;

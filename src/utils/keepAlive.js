@@ -93,8 +93,8 @@ function startKeepAlive(client) {
       return;
     }
 
-    // Direct /dashboard route serving index.html
-    if (pathname === '/dashboard') {
+    // Direct /dashboard and /callback route serving index.html
+    if (pathname === '/dashboard' || pathname === '/callback') {
       const indexPath = path.join(publicDir, 'index.html');
       const stream = fs.createReadStream(indexPath);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -102,7 +102,7 @@ function startKeepAlive(client) {
     }
 
     // Discord OAuth2 Callback handler (Server-Side Code Exchange & Token Storage)
-    if ((pathname === '/api/auth/callback' || (parsedUrl.query.code && (pathname === '/' || pathname === '/dashboard'))) && req.method === 'GET') {
+    if ((pathname === '/api/auth/callback' || (parsedUrl.query.code && (pathname === '/' || pathname === '/dashboard' || pathname === '/callback'))) && req.method === 'GET') {
       const code = parsedUrl.query.code;
       if (!code) {
         res.writeHead(302, { Location: '/dashboard?error=missing_code' });
